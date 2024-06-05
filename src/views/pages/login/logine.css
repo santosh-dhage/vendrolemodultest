@@ -1,0 +1,47 @@
+.pagesstyle
+{
+
+    text-decoration: 'none';
+    
+    font-Size:'11px';
+    font-Weight:'bold';
+    color: black;
+}
+
+/* #loginecolor{
+    background: linear-gradient(180deg, rgba(42,64,154,1) 0%, rgba(83,200,243,1) 100%);
+}
+.loginecolor{
+    background: linear-gradient(180deg, rgba(42,64,154,1) 0%, rgba(83,200,243,1) 100%);
+
+} */
+
+.pink-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    /* padding-right: 20px; */
+    animation: slideInBackground 1s forwards;
+  }
+  
+  @keyframes slideInBackground {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes slideInText {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+  

@@ -1,0 +1,36 @@
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+package-lock.json
+log
+
+# testing
+/coverage
+
+# production
+# /build
+
+# misc
+.eslintcache
+.DS_Store
+.idea
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+myenv
+mqtt_script.log
+/log/app.logs
+*.cpython-39.pyc
+db.sqlite3
+*.pyc
+/__pycache__
+/media
+/log
+mymqttapp.log

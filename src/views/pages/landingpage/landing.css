@@ -1,0 +1,73 @@
+.footercard
+{
+   text-Decoration: 'none';
+   font-size:'11px';
+ font-weight:'bold' ;
+ color:'white' ;
+}
+
+.contentstyle {
+    justify-content: center;
+}
+div#navbaritem {
+  padding-left: 10%;
+  padding-right: 10%;
+  /* padding-bottom: 1%; */
+  /* padding-top: 1%; */
+}
+.Growyourmachinetab{
+  padding-left: 10%;
+  padding-right: 10%;
+}
+.Growyourtext{
+  font-size:50px ;
+  font-weight: bold;
+  color: white;
+}
+.vl {
+  border-left: 1px solid #FAA21B;
+  height: 500px;
+}
+
+@media (max-width: 768px) {
+  .borderleft {
+      display: none;
+     
+  }
+  .vl{
+    border-left: none;
+  }
+}
+
+@keyframes moveLeftToRight {
+  from {
+      transform: translateX(-100%);
+      opacity: 0;
+  }
+  to {
+      transform: translateX(0);
+      opacity: 1;
+  }
+}
+
+.IvendsoftforFree{
+  background: linear-gradient(81deg, rgba(83,200,243,1) 0%, rgba(42, 46, 112,1) 100%);
+}
+.seefeatures{
+  background: linear-gradient(81deg, rgba(190,197,200,1) 0%, rgba(216,217,219,1) 100%);
+}
+.ticklogo{
+      margin-top: 10px;
+      margin-left: 18px
+}
+.footerbackground{
+  background-color: #2B3083;
+}
+.cardimage
+{
+  background-image: url('src/assets/Blog/plancardimg.jpg');
+  /* height: "100%"; */
+  background-size: cover;
+}
+
+

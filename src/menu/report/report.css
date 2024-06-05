@@ -1,0 +1,15 @@
+th.table-green {
+    background-color: rgb(67, 228, 67);
+}
+
+th.table-red{
+    background-color :#f8356f;
+    color: white;
+    
+}
+th.table-yellow{
+    background-color :yellow;
+}
+.table-light{
+    --cui-table-border-color: #000015;
+}

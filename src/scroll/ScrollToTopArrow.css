@@ -1,0 +1,35 @@
+/* ScrollToTopArrow.css */
+
+.arrow-container {
+    position: fixed;
+    bottom: 35px;
+    right: 20px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    cursor: pointer;
+  }
+  .arrow-container.visible {
+    opacity: 1;
+  }
+  
+  .fa-arrow-up::before {
+    content: "\f062"; /* Unicode for the up arrow icon from FontAwesome, you might need to adjust this */
+    font-family: FontAwesome;
+    font-size: 24px;
+    color: #f00; /* Arrow color */
+  }
+  
+  .scrollarrow {
+    width: 41px;
+    height: 40px;
+    background-color: #2fa7d6;
+    display: flex;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+  }
+  .scrollarrow a {
+    color: white;
+  }
+  
