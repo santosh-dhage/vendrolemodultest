@@ -133,15 +133,33 @@ const _nav2 = [
     ],
   },
   {
-    component: CNavItem,
+    // component: CNavItem,
+    component: CNavGroup,
     name:'Onboarding1',
     icon: <CIcon icon={cilUserPlus} customClassName="nav-icon"style={{ color: 'white' }} />,
-    to: '/onboarding1',
-    badge: {
-      color: 'info',
-      //  text: 'santosh_dhage',
-      // classNames:'santosh_dhage',
-    },
+    // to: '/onboarding1',
+    items: [
+      {
+        component: CNavItem,
+        name: 'Available Role',
+        to: '/available_role',
+      },
+      {
+        component: CNavItem,
+        name:  'Create Role',
+        to: '/onboarding1',
+      },
+      {
+        component: CNavItem,
+        name: 'Create User',
+        to: '/customer',
+      },
+      {
+        component: CNavItem,
+        name: 'Assign Role',
+        to: '/assign_role',
+      },
+    ],
   },
 
 

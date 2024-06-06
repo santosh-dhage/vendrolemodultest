@@ -27,6 +27,8 @@ const SmtpSetting =React.lazy(() => import('./menu/adminsetting/smtpsetting'))
 
 //==========================================admin onboarding====================
 const OnboardingOne=React.lazy(()=>import('./menu/onboarding_user/module_permissions'))
+const AvailableRole=React.lazy(()=>import('./menu/onboarding_user/available_role'))
+const AssignRole=React.lazy(()=>import('./menu/onboarding_user/assign_role'))
 //==============================================================================
 
 const Customer = React.lazy(() => import('./menu/onbording/customer'))
@@ -121,12 +123,20 @@ const UserPaymentReport = React.lazy(() => import('./menu/report/user/paymentrep
 const UserRefillReport = React.lazy(() => import('./menu/report/user/refill'))
 const User_MISReport = React.lazy(() => import('./menu/report/user/mis'))
 const UserMachinewiserefillreport=React.lazy(() => import('./menu/report/user/machinwiserefillreport'))
-
+//custom upload 
+const ModuleUpload = React.lazy(()=>import('./menu/customupload/module_table'))
 
 const routes = [
   { path: '/header', name: 'Header', element: Header },
   { path: '/footer', name: 'Footer', element: Footer },
 
+  //custom upload
+  { path: '/ModuleUpload', name: 'ModuleUpload', element: ModuleUpload },
+
+//onboarding module role for user
+{ path: '/available_role', name: 'AvailableRole', element: AvailableRole },
+{ path: '/assign_role', name: 'AssignRole', element: AssignRole },
+// { path: '/ModuleUpload', name: 'ModuleUpload', element: ModuleUpload },
   //supersuperadmin
   { path: '/clientfeedbackdetails', name: 'superclientfeedback', element: superclientfeedback },
   { path: '/toolfeedbackdetails', name: 'supertoolfeedback', element: supertoolfeedback },

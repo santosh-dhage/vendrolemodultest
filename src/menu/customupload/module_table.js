@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { CSmartTable } from '@coreui/react-pro'
-import { Link } from 'react-router-dom'
-import CreateProject from 'src/views/forms/CreateCheckPoint/CreateCheckPoint'
+// import { CSmartTable } from '@coreui/react-pro'
+// import { Link } from 'react-router-dom'
+// import CreateProject from 'src/views/forms/CreateCheckPoint/CreateCheckPoint'
 import useAxios from 'src/utils/useAxios'
 import { useNavigate } from 'react-router-dom'
 import CIcon from '@coreui/icons-react'
-import Select from 'react-select';
+// import Select from 'react-select';
 import { cilTrash, cilCheck, cilPencil, cilPlus,cilArrowBottom } from '@coreui/icons'
 import {
   CTableBody,CTableHeaderCell,CTable,CTableDataCell,CTableHead,CTableRow,CButton,
@@ -19,7 +19,7 @@ import {
 import * as XLSX from 'xlsx/xlsx.mjs'
 
 const Projects = () => {
-  const history = useNavigate()
+//   const history = useNavigate()
   let api = useAxios()
   let [notes1, setNotes1] = useState([])
   const [visible2, setVisible2] = useState(false)
@@ -81,14 +81,14 @@ const Projects = () => {
   
   const saveProject = async (e) => {
     e.preventDefault()
-    let response = await api.post('/api/module_tablelist/',notes1)
-    if (response.status === 201 ) {
-        setVisible2(true)
-        setAlerts('data submited')
-    } else {
-      setVisible2(true)
-      setAlerts('Something went wrong!')
-    }
+    // let response = await api.post('/api/module_tablelist/',notes1)
+    // if (response.status === 201 ) {
+    //     setVisible2(true)
+    //     setAlerts('data submited')
+    // } else {
+    //   setVisible2(true)
+    //   setAlerts('Something went wrong!')
+    // }
   }
   return (
     <>
@@ -101,7 +101,7 @@ const Projects = () => {
         <CFormInput
           type="file"
           className="btn btn-default btn-sm"
-          style={{ backgroundColor: 'rgb(1, 50, 32)', color: 'white' }}
+        //   style={{ backgroundColor: 'rgb(1, 50, 32)', color: 'white' }}
           onChange={ImportExcel}
         />
          </div>
@@ -110,7 +110,7 @@ const Projects = () => {
         <CButton
             type="submit"
             className="btn btn-default btn-sm "
-            style={{ backgroundColor: 'rgb(1, 50, 32)', color: 'white' }}
+            // style={{ backgroundColor: 'rgb(1, 50, 32)', color: 'white' }}
             onClick={saveProject}
         >
             <CIcon icon={cilCheck} style={{ color: 'White' }} size="sm" />Submit

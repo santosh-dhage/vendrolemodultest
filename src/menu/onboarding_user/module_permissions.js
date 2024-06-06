@@ -265,8 +265,6 @@ console.log(notes2);
                 />
               </CTableDataCell>
            
-          
-           
             </CTableRow>
 
             <CTableRow>
