@@ -11,6 +11,11 @@ router.register(r'modelcapacity', ModelCapacityViewSet, basename='modelcapacity'
 router.register(r'colorstore', ColorStoreViewSet, basename='colorstore')
 router.register(r'bulkuploadmachinemaster', BulkUploadMachineMasterViewSet, basename='bulkuploadmachinemaster')
 # router.register(r'ticket', TicketViewSet, basename='ticket')
+router.register(r'roles', RoleViewSet)
+router.register(r'modules', ModuleViewSet)
+router.register(r'sub-modules', SubModuleViewSet)
+router.register(r'role-modules', RoleModuleAssignmentViewSet)
+router.register(r'role-sub-modules', RoleSubModuleAssignmentViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -148,7 +153,10 @@ urlpatterns = [
     path('get_ticket_list_customer/', views.get_ticket_list_customer, name='get_ticket_list_customer'),
     
 
-
+    #roles 
+    path('upload-excel/', ExcelFileUploadView.as_view(), name='upload-excel'),
+    path('role-modules/<int:role_id>/', get_modules_for_role, name='get-modules-for-role'),
+    path('assignpermissions/',  AssignPermissionsAPIView.as_view()),
 
 
 ]
