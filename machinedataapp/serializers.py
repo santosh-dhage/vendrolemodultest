@@ -79,4 +79,35 @@ class TicketSerializer(serializers.ModelSerializer):
     #     ticket.save()
     #     return ticket
 
-    
+from rest_framework import serializers
+from .models import Role, Module, SubModule, RoleModuleAssignment, RoleSubModuleAssignment, ExcelFile
+
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = ['id', 'name']
+
+class ModuleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Module
+        fields = ['id', 'name']
+
+class SubModuleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubModule
+        fields = ['id', 'name', 'module']
+
+class RoleModuleAssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoleModuleAssignment
+        fields = ['id', 'role', 'module']
+
+class RoleSubModuleAssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoleSubModuleAssignment
+        fields = ['id', 'role', 'sub_module']
+
+class ExcelFileUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExcelFile
+        fields = ['file']
