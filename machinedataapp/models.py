@@ -113,3 +113,47 @@ class Ticket(models.Model):
     ticsrno = models.CharField(max_length=50, unique=True, null=True,blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tickets', null=True, blank=True)
     
+class Role(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+class Module(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+class SubModule(models.Model):
+    module = models.ForeignKey(Module, related_name='sub_modules', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+class RoleModuleAssignment(models.Model):
+    role = models.ForeignKey(Role, related_name='role_modules', on_delete=models.CASCADE)
+    module = models.ForeignKey(Module, related_name='role_assignments', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.role.name} - {self.module.name}"
+
+class RoleSubModuleAssignment(models.Model):
+    role = models.ForeignKey(Role, related_name='role_submodules', on_delete=models.CASCADE)
+    sub_module = models.ForeignKey(SubModule, related_name='role_assignments', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.role.name} - {self.sub_module.name}"
+
+class ExcelFile(models.Model):
+    file = models.FileField(upload_to='excel_files/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+class CustomPermission(models.Model):
+    name = models.CharField(max_length=100)
+    codename = models.CharField(max_length=100, unique=True)
+    submodule = models.ForeignKey(SubModule, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name

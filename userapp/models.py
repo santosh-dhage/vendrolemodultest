@@ -55,7 +55,7 @@ class User(AbstractUser):
     status=models.BooleanField(default=True,null=True,blank=True)
     profile_img=models.ImageField(upload_to='images/',null=True,blank=True,default='anonymous.jpg')
 
-
+    rolename=models.CharField(max_length=100,default='User',blank=True, null=True)
 
     
     USERNAME_FIELD = 'email'
