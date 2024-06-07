@@ -58,8 +58,8 @@ from .permissions import CustomPermissionRequired
 class UserMasterViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserMasterSerializer
-    # permission_classes = [IsAuthenticated]
-    permission_classes = [CustomPermissionRequired]
+    permission_classes = [IsAuthenticated]
+    # permission_classes = [CustomPermissionRequired]
 
     # @add_roles_modules_permissions
     # @view_roles_modules_permissions

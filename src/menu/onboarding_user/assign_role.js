@@ -117,7 +117,7 @@ const Projects = () => {
     let email
     let password
     notes1.map((note) => {
-        if (note.id === emp.value) {
+        if (note.id === emp) {
             email = note.email
             password = note.password
         }
@@ -126,13 +126,13 @@ const Projects = () => {
 
 
     const saveProject = async (e) => {
-        // e.preventDefault()
-        // if (!role) {
-        //   alert('Please select the role')
-        // }
-        // else if (!email) {
-        //   alert('Please select the employee mail id')
-        // }
+        e.preventDefault()
+        if (!role) {
+          alert('Please select the role')
+        }
+        else if (!email) {
+          alert('Please select the employee mail id')
+        }
         // else {
         //   let response1 = await api.put(`/api/user_infoViewSet/${emp.value}/`, {
         //     permissions: role,

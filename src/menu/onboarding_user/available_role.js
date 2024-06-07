@@ -74,7 +74,7 @@ const Projects = () => {
 
   let getcreate_project = async () => {
     let response = await api.get('/machine/roles/')
-    if (response.success === 1) {
+    if (response.data.success === 1) {
       setNotes(response.data.result)
     } else {
       alert('something went wrong')

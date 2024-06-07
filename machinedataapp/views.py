@@ -6993,6 +6993,57 @@ from userapp.models import User
 from django.contrib.contenttypes.models import ContentType
 # from django.contrib.auth.models import User, Group
 
+# class RoleWithModulesOrSubModulesAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         user_profile = request.user
+#         if user_profile.role != '2':  # Adjust as per your role checking logic
+#             return Response({'error': 'You do not have permission to assign permissions.'}, status=status.HTTP_403_FORBIDDEN)
+
+#         data = request.data
+#         role_name = data.get('role_name')
+#         modules = data.get('modules')
+
+#         if not role_name:
+#             return Response({'error': 'Role name is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+#         role, created = Role.objects.get_or_create(name=role_name)
+
+#         for module_data in modules:
+#             module_name = module_data.get('name')
+#             submodules_data = module_data.get('submodules')
+
+#             module, created = Module.objects.get_or_create(name=module_name, role=role)
+
+#             for submodule_data in submodules_data:
+#                 submodule_name = submodule_data.get('name')
+#                 permissions_data = submodule_data.get('permissions')
+
+#                 submodule, created = SubModule.objects.get_or_create(name=submodule_name, module=module)
+
+#                 for permission_data in permissions_data:
+#                     permission_name = permission_data.get('name')
+#                     codename = permission_data.get('codename')
+
+#                     custom_permission, created = CustomPermission.objects.get_or_create(
+#                         name=permission_name,
+#                         codename=codename,
+#                         submodule=submodule
+#                     )
+
+#                     content_type = ContentType.objects.get_for_model(CustomPermission)
+#                     permission, created = Permission.objects.get_or_create(
+#                         codename=codename,
+#                         name=permission_name,
+#                         content_type=content_type
+#                     )
+
+#                     # Add the built-in permission to the role
+#                     role.permissions.add(permission)
+
+#         return Response({'message': 'Role, modules, and sub-modules created successfully'}, status=status.HTTP_200_OK)
+
 class RoleWithModulesOrSubModulesAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -7012,37 +7063,11 @@ class RoleWithModulesOrSubModulesAPIView(APIView):
 
         for module_data in modules:
             module_name = module_data.get('name')
-            submodules_data = module_data.get('submodules')
-
             module, created = Module.objects.get_or_create(name=module_name, role=role)
 
-            for submodule_data in submodules_data:
-                submodule_name = submodule_data.get('name')
-                permissions_data = submodule_data.get('permissions')
+            # No need to handle submodules and permissions here
 
-                submodule, created = SubModule.objects.get_or_create(name=submodule_name, module=module)
-
-                for permission_data in permissions_data:
-                    permission_name = permission_data.get('name')
-                    codename = permission_data.get('codename')
-
-                    custom_permission, created = CustomPermission.objects.get_or_create(
-                        name=permission_name,
-                        codename=codename,
-                        submodule=submodule
-                    )
-
-                    content_type = ContentType.objects.get_for_model(CustomPermission)
-                    permission, created = Permission.objects.get_or_create(
-                        codename=codename,
-                        name=permission_name,
-                        content_type=content_type
-                    )
-
-                    # Add the built-in permission to the role
-                    role.permissions.add(permission)
-
-        return Response({'message': 'Role, modules, and sub-modules created successfully'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Role and modules created successfully','success':1}, status=status.HTTP_200_OK)
 
 class AssignRoleToUserAPIView(APIView):
     permission_classes = [IsAuthenticated]

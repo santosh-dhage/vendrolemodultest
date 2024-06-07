@@ -38,13 +38,15 @@ const CreateRole = () => {
     // Destructuring
     const { value, checked } = e.target
     const { numbers } = userinfo
-
+console.log(value,checked,'this is santosh')
     // Case 1 : The user checks the box
     if (checked) {
         setUserInfo({
           numbers: [...numbers, value],
           response: [...numbers, value],
         })
+        console.log(userinfo.numbers);
+        console.log(userinfo.response,"response");
       // if (e.target.value == 'Dashboard' || e.target.value == 'Onboarding') {
       //   setUserInfo({
       //     numbers: [...numbers, value],
@@ -98,14 +100,16 @@ const CreateRole = () => {
   }
   const saveProject = async (e) => {
     const form = e.currentTarget
-      .preventDefault()
+      e.preventDefault()
     if (form.checkValidity() === true) {
       if (false) {
         // if (notes2?.some(note => note.role_name === e.target.role_name.value)) {
         alert('This Role already exists');
       } else {
         const uploadData = new FormData(e.target)
-        let permission_data = [...userinfo.response]
+        let permission_data=[]
+userinfo.numbers.map((item)=>{let options={'name':item};permission_data.push(options)})
+      
         // notes1.map((note) => {
         //   console.log(note.module_permission_no)
         //   if (userinfo.response.includes(note.module_permission_no)) {
@@ -116,18 +120,19 @@ const CreateRole = () => {
         // permission_data.push(userinfo.response);
         //===============================================================================================
         let response = await api.post('machine/rolewithmodulesorsubmodules/', {
-          rolename: e.target.role_name.value,
-          modules: permission_data,
+          role_name: e.target.rolename.value,
+          modules:permission_data,
         })
         //================================================================================================
-        if (response.success === 1) {
-          setisSubmitting(false)
+        if (response.data.success === 1) {
+          // setisSubmitting(false)
           alert('data submited')
-          e.target.role_name.value = ''
+          e.target.rolename.value = ''
           getcreate_project()
           // history('/roles/appadmin/master/Role/assignrole')
         } else {
-          alert('Something went wrong!')
+
+          alert(response.data.success)
         }
       }
     }
@@ -494,7 +499,7 @@ const CreateRole = () => {
                   </CTableBody>
                 </CTable>
                 <CButton type="submit"
-                  style={{ backgroundColor: 'rgb(1, 50, 32)', color: 'white', height: "40px", width: "100px" }}>
+                  style={{  color: 'white', height: "40px", width: "100px" }}>
                   {/* <span aria-hidden="true" style={{ fontSize: '18px' }}></span>  */}
                   {/* <CIcon icon={cilCheck} style={{ color: 'white' }} size="sm" /> */}
                   &nbsp;Submit

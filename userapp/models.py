@@ -57,7 +57,7 @@ class User(AbstractUser):
     profile_img=models.ImageField(upload_to='images/',null=True,blank=True,default='anonymous.jpg')
 
     rolename=models.CharField(max_length=100,default='User',blank=True, null=True)
-    # custom_permissions = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='userscreate')
+    custom_permissions = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='userscreate',blank=True, null=True)
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
