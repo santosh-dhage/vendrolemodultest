@@ -6857,52 +6857,52 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from django.shortcuts import get_object_or_404
-from .models import Role, Module, SubModule, RoleModuleAssignment, RoleSubModuleAssignment, ExcelFile
-from .serializers import RoleSerializer, ModuleSerializer, SubModuleSerializer, RoleModuleAssignmentSerializer, RoleSubModuleAssignmentSerializer, ExcelFileUploadSerializer
+from .models import Role, Module, SubModule, RoleModuleAssignment,  ExcelFile
+from .serializers import RoleSerializer, ModuleSerializer, SubModuleSerializer, RoleModuleAssignmentSerializer,  ExcelFileUploadSerializer
 
-class ExcelFileUploadView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = ExcelFileUploadSerializer(data=request.data)
-        if serializer.is_valid():
-            excel_file_instance = serializer.save()
+# class ExcelFileUploadView(APIView):
+#     def post(self, request, *args, **kwargs):
+#         serializer = ExcelFileUploadSerializer(data=request.data)
+#         if serializer.is_valid():
+#             excel_file_instance = serializer.save()
 
-            # Parse the Excel file
-            parse_excel_file(excel_file_instance.file.path)
+#             # Parse the Excel file
+#             parse_excel_file(excel_file_instance.file.path)
 
-            return Response({"message": "File uploaded and data stored successfully"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#             return Response({"message": "File uploaded and data stored successfully"}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-def parse_excel_file(file_path):
-    # Read the Excel file
-    excel_data = pd.ExcelFile(file_path)
+# def parse_excel_file(file_path):
+#     # Read the Excel file
+#     excel_data = pd.ExcelFile(file_path)
 
-    # Assuming the first sheet contains Module and SubModule data
-    sheet1_data = pd.read_excel(excel_data, sheet_name='Sheet1')
+#     # Assuming the first sheet contains Module and SubModule data
+#     sheet1_data = pd.read_excel(excel_data, sheet_name='Sheet1')
 
-    for _, row in sheet1_data.iterrows():
-        module_name = row.get('Module')
-        sub_module_name = row.get('Sub Module')
-        if module_name:
-            module, _ = Module.objects.get_or_create(name=module_name)
-            if sub_module_name:
-                SubModule.objects.get_or_create(module=module, name=sub_module_name)
+#     for _, row in sheet1_data.iterrows():
+#         module_name = row.get('Module')
+#         sub_module_name = row.get('Sub Module')
+#         if module_name:
+#             module, _ = Module.objects.get_or_create(name=module_name)
+#             if sub_module_name:
+#                 SubModule.objects.get_or_create(module=module, name=sub_module_name)
 
-    # Assuming the second sheet contains Role assignments
-    sheet2_data = pd.read_excel(excel_data, sheet_name='Sheet2')
+#     # Assuming the second sheet contains Role assignments
+#     sheet2_data = pd.read_excel(excel_data, sheet_name='Sheet2')
 
-    for _, row in sheet2_data.iterrows():
-        role_name = row.get('role')
-        module_name = row.get('module')
-        sub_module_name = row.get('sub module')
+#     for _, row in sheet2_data.iterrows():
+#         role_name = row.get('role')
+#         module_name = row.get('module')
+#         sub_module_name = row.get('sub module')
 
-        if role_name:
-            role, _ = Role.objects.get_or_create(name=role_name)
-            if module_name:
-                module, created = Module.objects.get_or_create(name=module_name)
-                RoleModuleAssignment.objects.get_or_create(role=role, module=module)
-            if sub_module_name:
-                sub_module, created = SubModule.objects.get_or_create(name=sub_module_name, module=module)
-                RoleSubModuleAssignment.objects.get_or_create(role=role, sub_module=sub_module)
+#         if role_name:
+#             role, _ = Role.objects.get_or_create(name=role_name)
+#             if module_name:
+#                 module, created = Module.objects.get_or_create(name=module_name)
+#                 RoleModuleAssignment.objects.get_or_create(role=role, module=module)
+#             if sub_module_name:
+#                 sub_module, created = SubModule.objects.get_or_create(name=sub_module_name, module=module)
+#                 RoleSubModuleAssignment.objects.get_or_create(role=role, sub_module=sub_module)
 
 class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all()
@@ -6969,9 +6969,9 @@ class RoleModuleAssignmentViewSet(viewsets.ModelViewSet):
     queryset = RoleModuleAssignment.objects.all()
     serializer_class = RoleModuleAssignmentSerializer
 
-class RoleSubModuleAssignmentViewSet(viewsets.ModelViewSet):
-    queryset = RoleSubModuleAssignment.objects.all()
-    serializer_class = RoleSubModuleAssignmentSerializer
+# class RoleSubModuleAssignmentViewSet(viewsets.ModelViewSet):
+#     queryset = RoleSubModuleAssignment.objects.all()
+#     serializer_class = RoleSubModuleAssignmentSerializer
 
 @api_view(['GET'])
 def get_modules_for_role(request, role_id):
@@ -6993,35 +6993,28 @@ from userapp.models import User
 from django.contrib.contenttypes.models import ContentType
 # from django.contrib.auth.models import User, Group
 
-class AssignPermissionsAPIView(APIView):
+class RoleWithModulesOrSubModulesAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Check if the logged-in user has the admin role
-        user_profile=request.user
-        if not user_profile.role == '2':
-        #     User.objects.get(role=)
-        # if not request.user(name='Admin').exists():
+        user_profile = request.user
+        if user_profile.role != '2':  # Adjust as per your role checking logic
             return Response({'error': 'You do not have permission to assign permissions.'}, status=status.HTTP_403_FORBIDDEN)
 
         data = request.data
-        user_id = data.get('user_id')
-        role_name = data.get('rolename')
+        role_name = data.get('role_name')
         modules = data.get('modules')
 
-        # Ensure that role_name is provided
         if not role_name:
             return Response({'error': 'Role name is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = get_object_or_404(User, id=user_id)
-        role, created = Group.objects.get_or_create(name=role_name)
-        user.groups.add(role)
+        role, created = Role.objects.get_or_create(name=role_name)
 
         for module_data in modules:
             module_name = module_data.get('name')
             submodules_data = module_data.get('submodules')
 
-            module, created = Module.objects.get_or_create(name=module_name)
+            module, created = Module.objects.get_or_create(name=module_name, role=role)
 
             for submodule_data in submodules_data:
                 submodule_name = submodule_data.get('name')
@@ -7033,14 +7026,12 @@ class AssignPermissionsAPIView(APIView):
                     permission_name = permission_data.get('name')
                     codename = permission_data.get('codename')
 
-                    # Create or get the custom permission
                     custom_permission, created = CustomPermission.objects.get_or_create(
-                        name=permission_name, 
-                        codename=codename, 
+                        name=permission_name,
+                        codename=codename,
                         submodule=submodule
                     )
 
-                    # Create a corresponding entry in the built-in Permission model
                     content_type = ContentType.objects.get_for_model(CustomPermission)
                     permission, created = Permission.objects.get_or_create(
                         codename=codename,
@@ -7048,7 +7039,63 @@ class AssignPermissionsAPIView(APIView):
                         content_type=content_type
                     )
 
-                    # Add the permission to the role
+                    # Add the built-in permission to the role
                     role.permissions.add(permission)
 
-        return Response({'message': 'Permissions assigned successfully'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Role, modules, and sub-modules created successfully'}, status=status.HTTP_200_OK)
+
+class AssignRoleToUserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        user_id = data.get('user_id')
+        role_name = data.get('role_name')
+
+        user = User.objects.get(id=user_id)
+        role = Role.objects.get(name=role_name)
+
+        role.users.add(user)
+
+        # Get the built-in Permission instances associated with the role's custom permissions
+        permissions = role.permissions.all()
+        user.user_permissions.set(permissions)
+
+        return Response({'message': 'Role and permissions assigned to user successfully'}, status=status.HTTP_200_OK)
+
+
+class UserRolesModulesAndSubModulesAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        roles = user.roles.all()
+
+        if not roles:
+            return Response({'error': 'User has no roles assigned'}, status=status.HTTP_404_NOT_FOUND)
+
+        data = []
+
+        for role in roles:
+            role_data = {
+                'role_name': role.name,
+                'modules': []
+            }
+            modules = Module.objects.filter(role=role)
+            for module in modules:
+                module_data = {
+                    'module_name': module.name,
+                    'submodules': []
+                }
+                submodules = SubModule.objects.filter(module=module)
+                for submodule in submodules:
+                    permissions = CustomPermission.objects.filter(submodule=submodule)
+                    permission_data = [{'name': permission.name, 'codename': permission.codename} for permission in permissions]
+                    module_data['submodules'].append({
+                        'name': submodule.name,
+                        'permissions': permission_data
+                    })
+                role_data['modules'].append(module_data)
+            data.append(role_data)
+
+        return Response(data, status=status.HTTP_200_OK)
