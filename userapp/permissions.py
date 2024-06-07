@@ -30,6 +30,19 @@ from machinedataapp.models import CustomPermission
 
 
 class CustomPermissionRequired(permissions.BasePermission):
+    def has_permission(self, request, view):
+        
+        if request.user.is_authenticated:
+            print(request.user.role,'give me ')
+            # Allow all requests if the user's role is 2
+            if request.user.role == '2':
+                return True
+            # Otherwise, check for custom permissions
+            else:
+                user_permissions = request.user.permissions.all() if request.user.permissions else None
+                required_permission_codenames = CustomPermission.objects.values_list('codename', flat=True)
+                return any(perm.codename in required_permission_codenames for perm in user_permissions)
+        return False
     # def has_permission(self, request, view):
     #     if request.user.is_authenticated:
     #         print(request.user, 'check permission')
@@ -44,20 +57,7 @@ class CustomPermissionRequired(permissions.BasePermission):
     #         return not has_permission
     #     return False
     
-    def has_permission(self, request, view):
-        # def has_permission(self, request, view):
-            # Check if the user has the necessary custom permissions
-        if request.user.is_authenticated:
-            print(request.user.role,'give me ')
-            # Allow all requests if the user's role is 2
-            if request.user.role == '2':
-                return True
-            # Otherwise, check for custom permissions
-            else:
-                user_permissions = request.user.permissions.all() if request.user.permissions else None
-                required_permission_codenames = CustomPermission.objects.values_list('codename', flat=True)
-                return any(perm.codename in required_permission_codenames for perm in user_permissions)
-        return False
+    
         # if request.user.is_authenticated:
         #     print(request.user, 'check permission')
         #     # Get the permissions associated with the logged-in user
