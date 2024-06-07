@@ -2,7 +2,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager,User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from machinedataapp.models import CustomPermission
+from machinedataapp.models import CustomPermission,Role
 from django.conf import settings
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -56,8 +56,8 @@ class User(AbstractUser):
     status=models.BooleanField(default=True,null=True,blank=True)
     profile_img=models.ImageField(upload_to='images/',null=True,blank=True,default='anonymous.jpg')
 
-    rolename=models.CharField(max_length=100,default='User',blank=True, null=True)
-    custom_permissions = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='userscreate')
+    rolename=models.ForeignKey(Role,on_delete=models.CASCADE,blank=True, null=True)
+    permissions = models.ForeignKey(CustomPermission, on_delete=models.CASCADE, null=True, blank=True)
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

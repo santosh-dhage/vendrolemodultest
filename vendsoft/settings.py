@@ -138,7 +138,7 @@ AUTH_USER_MODEL = 'userapp.User'
 DATABASES = {
     'default': {
         'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': 'vendsoftDB',
+        'NAME': 'vendsofttest',
         'USER':'postgres',
         'PASSWORD':'1234',
         'HOST':'localhost',
