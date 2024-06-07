@@ -82,21 +82,41 @@ class TicketSerializer(serializers.ModelSerializer):
 from rest_framework import serializers
 from .models import Role, Module, SubModule, RoleModuleAssignment,  ExcelFile
 
+# class RoleSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Role
+#         fields = ['id', 'name']
+
+# class ModuleSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Module
+#         fields = ['id', 'name']
+
+# class SubModuleSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = SubModule
+#         fields = ['id', 'name', 'module']
+
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
-        fields = ['id', 'name']
+        fields = '__all__'
 
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module
-        fields = ['id', 'name']
+        fields = '__all__'
 
 class SubModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubModule
-        fields = ['id', 'name', 'module']
+        fields = '__all__'
 
+class CustomPermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomPermission
+        fields = '__all__'
+        
 class RoleModuleAssignmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoleModuleAssignment

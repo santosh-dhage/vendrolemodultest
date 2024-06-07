@@ -2,7 +2,8 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager,User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
+from machinedataapp.models import CustomPermission
+from django.conf import settings
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -56,7 +57,7 @@ class User(AbstractUser):
     profile_img=models.ImageField(upload_to='images/',null=True,blank=True,default='anonymous.jpg')
 
     rolename=models.CharField(max_length=100,default='User',blank=True, null=True)
-
+    # custom_permissions = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='userscreate')
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
