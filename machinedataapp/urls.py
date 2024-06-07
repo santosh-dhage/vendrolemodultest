@@ -15,7 +15,7 @@ router.register(r'roles', RoleViewSet)
 router.register(r'modules', ModuleViewSet)
 router.register(r'sub-modules', SubModuleViewSet)
 router.register(r'role-modules', RoleModuleAssignmentViewSet)
-router.register(r'role-sub-modules', RoleSubModuleAssignmentViewSet)
+
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -154,10 +154,91 @@ urlpatterns = [
     
 
     #roles 
-    path('upload-excel/', ExcelFileUploadView.as_view(), name='upload-excel'),
-    path('role-modules/<int:role_id>/', get_modules_for_role, name='get-modules-for-role'),
-    path('assignpermissions/',  AssignPermissionsAPIView.as_view()),
+    # path('upload-excel/', ExcelFileUploadView.as_view(), name='upload-excel'),
+    # path('role-modules/<int:role_id>/', get_modules_for_role, name='get-modules-for-role'),
+    path('rolewithmodulesorsubmodules/',  RoleWithModulesOrSubModulesAPIView.as_view()),
+    path('assignpermissions/',  AssignRoleToUserAPIView.as_view()),
+    path('users/module/',  UserRolesModulesAndSubModulesAPIView.as_view()),
 
 
 ]
 
+# class RoleWithModulesOrSubModulesAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         # Check if the logged-in user has the admin role
+#         user_profile=request.user
+#         if not user_profile.role == '2':
+#         #     User.objects.get(role=)
+#         # if not request.user(name='Admin').exists():
+#             return Response({'error': 'You do not have permission to assign permissions.'}, status=status.HTTP_403_FORBIDDEN)
+
+#         data = request.data
+        
+#         role_name = data.get('rolename')
+#         modules = data.get('modules')
+
+#         # Ensure that role_name is provided
+#         if not role_name:
+#             return Response({'error': 'Role name is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # user = get_object_or_404(User, id=user_id)
+#         role, created = Group.objects.get_or_create(name=role_name)
+#         user.groups.add(role)
+#         # role, created = Role.objects.get_or_create(name=role_name)
+        
+
+#         for module_data in modules:
+#             module_name = module_data.get('name')
+#             submodules_data = module_data.get('submodules')
+
+#             module, created = Module.objects.get_or_create(name=module_name)
+
+#             for submodule_data in submodules_data:
+#                 submodule_name = submodule_data.get('name')
+#                 permissions_data = submodule_data.get('permissions')
+
+#                 submodule, created = SubModule.objects.get_or_create(name=submodule_name, module=module)
+
+#                 for permission_data in permissions_data:
+#                     permission_name = permission_data.get('name')
+#                     codename = permission_data.get('codename')
+
+#                     # Create or get the custom permission
+#                     custom_permission, created = CustomPermission.objects.get_or_create(
+#                         name=permission_name, 
+#                         codename=codename, 
+#                         submodule=submodule
+#                     )
+
+#                     # Create a corresponding entry in the built-in Permission model
+#                     content_type = ContentType.objects.get_for_model(CustomPermission)
+#                     permission, created = Permission.objects.get_or_create(
+#                         codename=codename,
+#                         name=permission_name,
+#                         content_type=content_type
+#                     )
+#         return Response({'message': 'Role and module and sub module create successfully'}, status=status.HTTP_200_OK)
+
+
+# class AssignPermissionsAPIView(APIView):
+#     def post(self, request):
+#         data = request.data
+#         user_id = data.get('user_id')
+#         role_name = data.get('role_name')
+
+#         # Retrieve the user based on the provided user ID
+#         user = get_object_or_404(User, id=user_id)
+
+#         # Retrieve the role based on the provided role name
+#         role = get_object_or_404(Role, name=role_name)
+
+#         # Retrieve the permissions associated with the specified role
+#         # permissions = CustomPermission.objects.filter(submodule__module__group=role)
+#         permissions = CustomPermission.objects.filter(submodule__module__role=role)
+
+#         # Assign the permissions to the user
+#         user.user_permissions.set(permissions)
+
+#         return Response({'message': 'Permissions assigned successfully'}, status=status.HTTP_200_OK)

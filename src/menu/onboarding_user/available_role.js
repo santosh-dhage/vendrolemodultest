@@ -73,13 +73,12 @@ const Projects = () => {
   }, [])
 
   let getcreate_project = async () => {
-    // let response = await api.get('/api/customrole/')
-    // if (response.status === 200) {
-      
-    //   setNotes(response.data)
-    // } else {
-    //   alert('something went wrong')
-    // }
+    let response = await api.get('/machine/roles/')
+    if (response.success === 1) {
+      setNotes(response.data.result)
+    } else {
+      alert('something went wrong')
+    }
   }
 
   const updateProject = async (e) => {
@@ -135,7 +134,7 @@ const Projects = () => {
             <CTableRow > 
               {/* key={note.id} */}
              <CTableHeaderCell scope="row" >{index + 1}</CTableHeaderCell>
-              <CTableDataCell>{note.role_name}</CTableDataCell>
+              <CTableDataCell>{note.name}</CTableDataCell>
               <CTableDataCell>
                 {/* <Link to={`/roles/appadmin/master/Role/avaliable/${note.id}`}> */}
                   <CIcon

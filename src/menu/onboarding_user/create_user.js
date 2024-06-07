@@ -384,7 +384,7 @@ function Topic() {
               }}
               sorterValue={{ coloumns: 'created_at', state: 'asc' }}
               itemsPerPageOptions={[10, 20, 50, 100]}
-              tableFilter
+              // tableFilter
               tableProps={{
                 color: 'success-color-secondary',
                 hover: true,
@@ -401,7 +401,7 @@ function Topic() {
                 className: 'align-middle',
               }}
               tableFilterLabel={'Search : '}
-              tableFilterPlaceholder={'Enter String to Search'}
+              tableFilterPlaceholder={'Enter sString to Search'}
               itemsPerPageLabel={'Rows per page:'}
             />
           </CCol>
