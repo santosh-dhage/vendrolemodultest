@@ -7129,6 +7129,7 @@ class UserRolesModulesAndSubModulesAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
+        user_id = user.id
         roles = Role.objects.filter(users=user)
         roles_data = []
 
@@ -7158,4 +7159,9 @@ class UserRolesModulesAndSubModulesAPIView(APIView):
                 'modules': modules_data
             })
 
-        return Response(roles_data)
+        response_data = {
+            'user_id': user_id,
+            'roles': roles_data
+        }
+
+        return Response(response_data)
