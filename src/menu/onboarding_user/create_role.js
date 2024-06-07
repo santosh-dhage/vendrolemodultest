@@ -29,8 +29,8 @@ const CreateRole = () => {
   const [validated, setvalidated] = useState(false)
   let [isSubmitting, setisSubmitting] = useState(false)
   const [userinfo, setUserInfo] = useState({
-    numbers: [''],
-    response: [''],
+    numbers: [],
+    response: [],
   })
   const [usermodule, setUsermodule] = useState([]);
 
