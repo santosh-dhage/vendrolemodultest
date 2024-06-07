@@ -7064,38 +7064,73 @@ class AssignRoleToUserAPIView(APIView):
         return Response({'message': 'Role and permissions assigned to user successfully'}, status=status.HTTP_200_OK)
 
 
+# class UserRolesModulesAndSubModulesAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         user = request.user
+#         roles = user.roles.all()
+
+#         if not roles:
+#             return Response({'error': 'User has no roles assigned'}, status=status.HTTP_404_NOT_FOUND)
+
+#         data = []
+
+#         for role in roles:
+#             role_data = {
+#                 'role_name': role.name,
+#                 'modules': []
+#             }
+#             modules = Module.objects.filter(role=role)
+#             for module in modules:
+#                 module_data = {
+#                     'module_name': module.name,
+#                     'submodules': []
+#                 }
+#                 submodules = SubModule.objects.filter(module=module)
+#                 for submodule in submodules:
+#                     permissions = CustomPermission.objects.filter(submodule=submodule)
+#                     permission_data = [{'name': permission.name, 'codename': permission.codename} for permission in permissions]
+#                     module_data['submodules'].append({
+#                         'name': submodule.name,
+#                         'permissions': permission_data
+#                     })
+#                 role_data['modules'].append(module_data)
+#             data.append(role_data)
+
+#         return Response(data, status=status.HTTP_200_OK)
 class UserRolesModulesAndSubModulesAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         user = request.user
-        roles = user.roles.all()
-
-        if not roles:
-            return Response({'error': 'User has no roles assigned'}, status=status.HTTP_404_NOT_FOUND)
-
-        data = []
+        roles = Role.objects.filter(users=user)
+        roles_data = []
 
         for role in roles:
-            role_data = {
-                'role_name': role.name,
-                'modules': []
-            }
             modules = Module.objects.filter(role=role)
+            modules_data = []
+
             for module in modules:
-                module_data = {
-                    'module_name': module.name,
-                    'submodules': []
-                }
                 submodules = SubModule.objects.filter(module=module)
+                submodules_data = []
+
                 for submodule in submodules:
                     permissions = CustomPermission.objects.filter(submodule=submodule)
-                    permission_data = [{'name': permission.name, 'codename': permission.codename} for permission in permissions]
-                    module_data['submodules'].append({
+                    permissions_data = CustomPermissionSerializer(permissions, many=True).data
+                    submodules_data.append({
                         'name': submodule.name,
-                        'permissions': permission_data
+                        'permissions': permissions_data
                     })
-                role_data['modules'].append(module_data)
-            data.append(role_data)
 
-        return Response(data, status=status.HTTP_200_OK)
+                modules_data.append({
+                    'name': module.name,
+                    'submodules': submodules_data
+                })
+
+            roles_data.append({
+                'role_name': role.name,
+                'modules': modules_data
+            })
+
+        return Response(roles_data)
