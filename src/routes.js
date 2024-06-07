@@ -26,7 +26,7 @@ const Colorcontext = React.lazy(() => import('./menu/adminsetting/colorcontext')
 const SmtpSetting =React.lazy(() => import('./menu/adminsetting/smtpsetting'))
 
 //==========================================admin onboarding====================
-const OnboardingOne=React.lazy(()=>import('./menu/onboarding_user/module_permissions'))
+const OnboardingOne=React.lazy(()=>import('./menu/onboarding_user/create_role'))
 const AvailableRole=React.lazy(()=>import('./menu/onboarding_user/available_role'))
 const AssignRole=React.lazy(()=>import('./menu/onboarding_user/assign_role'))
 //==============================================================================

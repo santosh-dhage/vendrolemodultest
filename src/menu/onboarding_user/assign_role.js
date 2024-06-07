@@ -48,10 +48,11 @@ const Projects = () => {
     }, [])
 
     let getcreate_project = async () => {
-        // let response = await api.get('/api/customrole/')
+        let response = await api.get('/machine/roles/')
         let response1 = await api.get('/api/users/')
 
-        if (response1.data.success === 1) {
+        if (response1.data.success === 1 && response.data.success===1) {
+            setNotes(response.data.result)
             let newdata = []
             for (var i = 0; i < response1.data.result.length; i++) {
                 let a = response1.data.result[i]
@@ -94,6 +95,14 @@ const Projects = () => {
         // }
     }
 
+    notes.map((note) => {
+        let options = {
+            label: note.name,
+            value: note.name
+        }
+        data1.push(options)
+
+    })
 
     notes1.map((note) => {
         let options = {
@@ -185,18 +194,18 @@ const Projects = () => {
             key: 'sr_no',
             label: 'Sr No',
             sorter: false,
-            _props: { color: 'success', className: 'fw-semibold' },
+            _props: { color: 'secondary', className: 'fw-semibold' },
         },
 
         {
             label: 'Email',
             key: 'email',
-            _props: { color: 'success', className: 'fw-semibold' },
+            _props: { color: 'secondary', className: 'fw-semibold' },
         },
         {
             label: 'Role',
             key: 'role',
-            _props: { color: 'success', className: 'fw-semibold' },
+            _props: { color: 'secondary', className: 'fw-semibold' },
         },
         {
             key: 'Action',
@@ -204,15 +213,11 @@ const Projects = () => {
             _style: { width: '8%' },
             filter: false,
             sorter: false,
-            _props: { color: 'success', className: 'fw-semibold' },
+            _props: { color: 'secondary', className: 'fw-semibold' },
         },
 
     ]
-    const options = [
-        { value: 'chocolate', label: 'Chocolate' },
-        { value: 'strawberry', label: 'Strawberry' },
-        { value: 'vanilla', label: 'Vanilla' },
-      ];
+
     return (
         <>
 
@@ -231,7 +236,7 @@ const Projects = () => {
                                         <CFormLabel htmlFor="validationCustom01" style={{ fontWeight: '600' }}>
                                             Role Name
                                         </CFormLabel>
-                                        <Select options={data} onChange={(opt) => setRole(opt.value)} />
+                                        <Select options={data1} onChange={(opt) => setRole(opt.value)} />
                                         <CFormFeedback valid>Looks good!</CFormFeedback>
                                     </CCol>
                                     <CCol md={5}>
@@ -255,8 +260,8 @@ const Projects = () => {
 
                             <CSmartTable
                                 activePage={1}
-                                cleaner
-                                clickableRows
+                                // cleaner
+                                // clickableRows
                                 columns={columns}
                                 columnSorter
                                 items={notes1}
@@ -308,14 +313,14 @@ const Projects = () => {
                                     // }
                                 }}
                                 itemsPerPageOptions={[10, 20, 50, 100]}
-                                tableFilter
+                                // tableFilter
                                 tableProps={{
-                                    color: 'success-color-dark',
+                                    // color: 'success-color-dark',
                                     hover: true,
                                     responsive: true,
                                     border: '1.5px solid #074',
                                 }}
-                                tableFilterLabel={'Search : '}
+                                // tableFilterLabel={'Search : '}
                                 tableFilterPlaceholder={'Enter String to Search'}
                                 itemsPerPageLabel={'Rows per page:'}
                             />

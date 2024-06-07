@@ -20,10 +20,15 @@ import { _nav2, _nav3, _nav4, _nav5, _nav6, _nav7, _nav8 } from '../_nav'
 import defaultlogo from 'src/assets/images/default_logo.png'
 const AppSidebar = ({ color }) => {
 
+  let [notes, setNotes] = useState([])
+  let [modules_no, setModules_no] = useState([])
+  let [sub_modules_no, setSub_modules_no] = useState([])
+  let [permission_no, setPermission_no] = useState([])
+
   var urlurl=window.location.origin
   let urlArry=urlurl.split('.');
   let path="/media/"+urlArry[0].split('//')[1]+"/anonymous.jpg"
-let path1="/public/default_logo.png"
+  let path1="/public/default_logo.png"
 
   const dispatch = useDispatch()
   const api = useAxios()
@@ -36,6 +41,9 @@ let path1="/public/default_logo.png"
   let [notes2, setNotes2] = useState([])
   const baseURL = baseurl()
   const { selectedColor } = useColor() // Access selectedColor from context
+
+  let custommodul=[];
+
   useEffect(() => {
     getTopic()
   }, [logoUrl])
@@ -53,6 +61,7 @@ let path1="/public/default_logo.png"
     } catch (error) {
       console.error('Error fetching logo and favicon:', error)
     }
+    setModules_no(['Dashboard','Onboarding','Report','Master','Machine Mapping','History','Feedback','setting','Tickets'])
   }
   
 

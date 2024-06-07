@@ -57,36 +57,49 @@ const CreateRole = () => {
   }
 
 let getcreate_project = async () => {
+  // let response = await api.get('/api/checkpoint/')
+  // let response1 = await api.get('/api/module_table/')
+  let response2 = await api.get('/machine/roles/')
+  if(response2.success===1){
+  // if (response.status === 200 && response1.status === 200 && response2.status===200) {
+    // setNotes(response.data)
+    // setNotes1(response1.data)
+    setNotes2(response2.data.result)
+  } else {
+    alert('something went wrong')
+  }
  
 }
   const saveProject = async (e) => {
     const form = e.currentTarget
     .preventDefault()
     if (form.checkValidity() === true) {
-      if (notes2?.some(note => note.role_name === e.target.role_name.value)) {
+      if(false){
+      // if (notes2?.some(note => note.role_name === e.target.role_name.value)) {
         alert('This Role already exists');
       } else {
       const uploadData = new FormData(e.target)
-    let permission_data = []
-    notes1.map((note) => {
-      console.log(note.module_permission_no)
-      if (userinfo.response.includes(note.module_permission_no)) {
-        console.log(note.module_permission_no)
-        permission_data.push(note.id)
-      }
-    })
+    let permission_data = [...userinfo.response]
+    // notes1.map((note) => {
+    //   console.log(note.module_permission_no)
+    //   if (userinfo.response.includes(note.module_permission_no)) {
+    //     console.log(note.module_permission_no)
+    //     permission_data.push(note.id)
+    //   }
+    // })
+    // permission_data.push(userinfo.response);
 //===============================================================================================
-    let response = await api.post('/api/customrole/', {
+    let response = await api.post('/machine/roles/', {
       role_name: e.target.role_name.value,
       permision: permission_data,
     })
 //================================================================================================
-    if (response.status === 201) {
+    if (response.success === 1) {
       setisSubmitting(false)
       alert('data submited')
       e.target.role_name.value = ''
       getcreate_project()
-      history('/roles/appadmin/master/Role/assignrole')
+      // history('/roles/appadmin/master/Role/assignrole')
     } else {
       alert('Something went wrong!')
     }
@@ -122,26 +135,7 @@ console.log(notes2);
       alert('Something went wrong!')
     }
   }
- function myfunc(e){
-  const { value,checked } = e.target
-  const { numbers } = userinfo
- 
-  // Case 1 : The user checks the box
-  if (checked) {
-    setUserInfo({
-      numbers: [...numbers, value],
-      response: [...numbers, value],
-    })
-  }
 
-  // Case 2  : The user unchecks the box
-  else {
-    setUserInfo({
-      numbers: numbers.filter((e) => e !== value),
-      response: numbers.filter((e) => e !== value),
-    })
-  }
- }
   return (
     <>
     {/* <Indexfile /> */}
@@ -156,7 +150,7 @@ console.log(notes2);
         // noValidate
         // validated={validated}
         // onSubmit={printt}
-        // onSubmit={saveProject}
+        onSubmit={saveProject}
       >
         <CCol md={6}>
           <CFormLabel htmlFor="validationCustom01" style={{ fontWeight: '600' }}>
