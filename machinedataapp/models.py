@@ -141,7 +141,7 @@ class CustomPermission(models.Model):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
     submodule = models.ForeignKey(SubModule, related_name='permissions', on_delete=models.CASCADE, null=True, blank=True)
-
+    
     def __str__(self):
         return self.name
     
