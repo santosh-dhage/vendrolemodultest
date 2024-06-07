@@ -66,13 +66,13 @@ class MachineMaster(models.Model):
     def __str__(self):
         return str(self.machine_id)
 
-
+from django.conf import settings
     
 class MachineUserMapping(models.Model):
     machine = models.ForeignKey(MachineMaster, on_delete=models.CASCADE,null=True, blank=True)
-    assigned_user = models.ForeignKey(User,on_delete=models.CASCADE ,null=True, blank=True,related_name='assigned_users')
+    assigned_user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE ,null=True, blank=True,related_name='assigned_users')
     assigned_user_date = models.DateTimeField(null=True, blank=True)
-    assigned_customer = models.ForeignKey(User,on_delete=models.CASCADE,null=True, blank=True,related_name='assigned_customers')
+    assigned_customer = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True, blank=True,related_name='assigned_customers')
     assigned_customer_date = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True,null=True, blank=True)
     created_at=models.DateTimeField(auto_now_add=True,blank=True,null=True)
@@ -98,7 +98,7 @@ class ColorStore(models.Model):
     
 class Ticket(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, null=True, blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     machine_mapping=models.ForeignKey(MachineUserMapping, on_delete=models.CASCADE, null=True, blank=True)
     machine_map=models.ForeignKey(MachineMaster, on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=100, null=True, blank=True)
@@ -108,15 +108,15 @@ class Ticket(models.Model):
     resolved_at = models.DateTimeField(null=True, blank=True)
     priority = models.CharField(max_length=10,  default='LOW')
     status = models.CharField(max_length=20, default='CREATED')
-    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tickets')
+    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tickets')
     problem_type = models.CharField(max_length=10, null=True, blank=True)
     ticsrno = models.CharField(max_length=50, unique=True, null=True,blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tickets', null=True, blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_tickets', null=True, blank=True)
 from django.contrib.auth.models import Permission  
 from userapp.models import User  
 class Role(models.Model):
     name = models.CharField(max_length=100)
-    users = models.ManyToManyField(User, related_name='roles')
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='roles')
     permissions = models.ManyToManyField(Permission, related_name='roles')  # Add this line
 
     def __str__(self):
