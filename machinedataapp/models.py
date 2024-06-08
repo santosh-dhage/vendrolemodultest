@@ -114,44 +114,56 @@ class Ticket(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_tickets', null=True, blank=True)
 from django.contrib.auth.models import Permission  
 from userapp.models import User  
-class Role(models.Model):
-    name = models.CharField(max_length=100)
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='roles')
-    permissions = models.ManyToManyField(Permission, related_name='roles')  # Add this line
 
-    def __str__(self):
-        return self.name
-
-class Module(models.Model):
+class CustomPermission(models.Model):
     name = models.CharField(max_length=100)
-    role = models.ForeignKey(Role, related_name='modules', on_delete=models.CASCADE)
+    codename = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
 
 class SubModule(models.Model):
     name = models.CharField(max_length=100)
-    module = models.ForeignKey(Module, related_name='submodules', on_delete=models.CASCADE)
+    permissions = models.ManyToManyField(CustomPermission, related_name='submodules', blank=True)
 
     def __str__(self):
         return self.name
 
-
-class CustomPermission(models.Model):
+class Module(models.Model):
     name = models.CharField(max_length=100)
-    codename = models.CharField(max_length=100)
-    submodule = models.ForeignKey(SubModule, related_name='permissions', on_delete=models.CASCADE, null=True, blank=True)
-    
-    def __str__(self):
-        return self.name
-    
-class RoleModuleAssignment(models.Model):
-    role = models.ForeignKey(Role, related_name='role_modules', on_delete=models.CASCADE, null=True, blank=True)
-    module = models.ForeignKey(Module, related_name='role_assignments', on_delete=models.CASCADE, null=True, blank=True)
-    sub_module = models.ForeignKey(SubModule, related_name='role_assignments', on_delete=models.CASCADE, null=True, blank=True)
+    submodules = models.ManyToManyField(SubModule, related_name='modules', blank=True)
 
     def __str__(self):
-        return f"{self.role.name} - {self.module.name} - {self.sub_module.name}"
+        return self.name
+
+class Role(models.Model):
+    name = models.CharField(max_length=100, unique=True)  # Add unique=True
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='user_roles', blank=True)
+    modules = models.ManyToManyField(Module, related_name='roles', blank=True)
+    def add_permissions(self, permissions):
+        """
+        Method to add permissions to the role.
+        :param permissions: List of permission objects to be added.
+        """
+        for module in self.modules.all():
+            for submodule in module.submodules.all():
+                for permission in permissions:
+                    # Ensure permission is a CustomPermission object
+                    if isinstance(permission, CustomPermission):
+                        submodule.permissions.add(permission)
+                    else:
+                        # If not a CustomPermission object, try to get it by name
+                        try:
+                            perm = CustomPermission.objects.get(name=permission['name'], codename=permission['codename'])
+                            submodule.permissions.add(perm)
+                        except CustomPermission.DoesNotExist:
+                            # If permission doesn't exist, create it
+                            perm = CustomPermission.objects.create(name=permission['name'], codename=permission['codename'])
+                            submodule.permissions.add(perm)
+
+    def __str__(self):
+        return self.name
+
 class ExcelFile(models.Model):
     file = models.FileField(upload_to='excel_files/')
     uploaded_at = models.DateTimeField(auto_now_add=True)

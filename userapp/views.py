@@ -49,20 +49,17 @@ LOG_FILE = 'log/app.log'
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 from django.db import transaction
-from .decorators import add_roles_modules_permissions,update_roles_modules_permissions,view_roles_modules_permissions
+
 
 index = never_cache(TemplateView.as_view(template_name='index.html'))
 from .permissions import CustomPermissionRequired
 
-
 class UserMasterViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserMasterSerializer
-    # permission_classes = [IsAuthenticated]
-    permission_classes = [CustomPermissionRequired]
+    permission_classes = [IsAuthenticated, CustomPermissionRequired]
 
-    # @add_roles_modules_permissions
-    # @view_roles_modules_permissions
+    
     def list(self, request, *args, **kwargs):
         try:
             queryset = User.objects.all().order_by('-id')
@@ -71,7 +68,7 @@ class UserMasterViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logging.error(f'Error listing UserMaster: {str(e)}')
             return Response({'success': 0, 'message': 'Not Found', 'result': serializer.errors})
-    # @add_roles_modules_permissions
+        
     def retrieve(self, request, pk, *args, **kwargs):
         try:
             user = User.objects.get(pk=pk)
@@ -81,7 +78,6 @@ class UserMasterViewSet(viewsets.ModelViewSet):
             logging.error(f'Error retrieving UserMaster: {str(e)}')
             return Response({'success': 0, 'message': 'Not Found'})
 
-    # @add_roles_modules_permissions    
     def create(self, request, *args, **kwargs):
         domain = self.get_domain(request)
         tenant = domain.tenant
@@ -171,7 +167,6 @@ class UserMasterViewSet(viewsets.ModelViewSet):
             logging.error(f'Error sending custom email: {e}')
             return False
     
-    # @update_roles_modules_permissions
     def update(self, request, pk, *args, **kwargs):
         try:
             chp = User.objects.get(pk=pk)
@@ -194,7 +189,6 @@ class UserMasterViewSet(viewsets.ModelViewSet):
             logging.error(f'Error listing UserMaster: {str(e)}')
             return Response({'success': 0, 'message': 'Not Found', 'result': serializer.errors})
         
-    # @add_roles_modules_permissions
     def destroy(self, request, pk, *args, **kwargs):
         try:
             user = User.objects.get(pk=pk)

@@ -80,47 +80,33 @@ class TicketSerializer(serializers.ModelSerializer):
     #     return ticket
 
 from rest_framework import serializers
-from .models import Role, Module, SubModule, RoleModuleAssignment,  ExcelFile
-
-# class RoleSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Role
-#         fields = ['id', 'name']
-
-# class ModuleSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Module
-#         fields = ['id', 'name']
-
-# class SubModuleSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = SubModule
-#         fields = ['id', 'name', 'module']
-
-class RoleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Role
-        fields = '__all__'
-
-class ModuleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Module
-        fields = '__all__'
-
-class SubModuleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SubModule
-        fields = '__all__'
+from .models import Role, Module, SubModule,  ExcelFile
 
 class CustomPermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomPermission
         fields = '__all__'
-        
-class RoleModuleAssignmentSerializer(serializers.ModelSerializer):
+
+class SubModuleSerializer(serializers.ModelSerializer):
+    permissions = CustomPermissionSerializer(many=True)
+
     class Meta:
-        model = RoleModuleAssignment
-        fields = ['id', 'role', 'module','sub_module']
+        model = SubModule
+        fields = '__all__'
+
+class ModuleSerializer(serializers.ModelSerializer):
+    submodules = SubModuleSerializer(many=True)
+
+    class Meta:
+        model = Module
+        fields = '__all__'
+
+class RoleSerializer(serializers.ModelSerializer):
+    modules = ModuleSerializer(many=True)
+
+    class Meta:
+        model = Role
+        fields = '__all__'
 
 
 class ExcelFileUploadSerializer(serializers.ModelSerializer):

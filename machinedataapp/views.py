@@ -6857,8 +6857,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from django.shortcuts import get_object_or_404
-from .models import Role, Module, SubModule, RoleModuleAssignment,  ExcelFile
-from .serializers import RoleSerializer, ModuleSerializer, SubModuleSerializer, RoleModuleAssignmentSerializer,  ExcelFileUploadSerializer
+from .models import Role, Module, SubModule,   ExcelFile
+from .serializers import RoleSerializer, ModuleSerializer, SubModuleSerializer,   ExcelFileUploadSerializer
 
 # class ExcelFileUploadView(APIView):
 #     def post(self, request, *args, **kwargs):
@@ -6904,220 +6904,237 @@ from .serializers import RoleSerializer, ModuleSerializer, SubModuleSerializer, 
 #                 sub_module, created = SubModule.objects.get_or_create(name=sub_module_name, module=module)
 #                 RoleSubModuleAssignment.objects.get_or_create(role=role, sub_module=sub_module)
 
-class RoleViewSet(viewsets.ModelViewSet):
-    queryset = Role.objects.all()
-    serializer_class = RoleSerializer
+# class RoleViewSet(viewsets.ModelViewSet):
+#     queryset = Role.objects.all()
+#     serializer_class = RoleSerializer
 
-    def list(self, request, *args, **kwargs):
-        try:
-            queryset = Role.objects.all().order_by('-id')
-            serializer = RoleSerializer(queryset, many=True)
-            return Response({'success': 1, 'message': 'Manage Membership List', 'result': serializer.data})
-        except Exception as e:
-            return Response({'success': 0, 'message': 'Not Found', 'result': str(e)})
+#     def list(self, request, *args, **kwargs):
+#         try:
+#             queryset = Role.objects.all().order_by('-id')
+#             serializer = RoleSerializer(queryset, many=True)
+#             return Response({'success': 1, 'message': 'Manage Membership List', 'result': serializer.data})
+#         except Exception as e:
+#             return Response({'success': 0, 'message': 'Not Found', 'result': str(e)})
 
-    def retrieve(self, request, pk, *args, **kwargs):
-        try:
-            chp = Role.objects.get(pk=pk)
-            serializer = RoleSerializer(chp)
-            return Response({'success': 1, 'message': 'Manage Membership', 'result': serializer.data})
-        except Role.DoesNotExist:
-            return Response({'success': 0, 'message': 'Not Found'})
+#     def retrieve(self, request, pk, *args, **kwargs):
+#         try:
+#             chp = Role.objects.get(pk=pk)
+#             serializer = RoleSerializer(chp)
+#             return Response({'success': 1, 'message': 'Manage Membership', 'result': serializer.data})
+#         except Role.DoesNotExist:
+#             return Response({'success': 0, 'message': 'Not Found'})
 
-    def create(self, request, *args, **kwargs):
-        try:
-            serializer = RoleSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+#     def create(self, request, *args, **kwargs):
+#         try:
+#             serializer = RoleSerializer(data=request.data)
+#             serializer.is_valid(raise_exception=True)
+#             serializer.save()
             
-            return Response({'success': 1, 'message': 'Data Created', 'result': serializer.data})
-        except ValidationError as ve:
-            return Response({'success': 0, 'message': 'Not Created', 'result': ve.detail})
+#             return Response({'success': 1, 'message': 'Data Created', 'result': serializer.data})
+#         except ValidationError as ve:
+#             return Response({'success': 0, 'message': 'Not Created', 'result': ve.detail})
 
-    def update(self, request, pk, *args, **kwargs):
-        try:
-            chp = Role.objects.get(pk=pk)
-            if 'rqcode' not in request.data:
-                return Response({'success': 0, 'message': 'rqcode is required'}, status=status.HTTP_400_BAD_REQUEST)
-            serializer = RoleSerializer(chp, data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response({'success': 1, 'message': 'Data Updated', 'result': serializer.data})
-        except Role.DoesNotExist:
-            return Response({'success': 0, 'message': 'Not Found'})
+#     def update(self, request, pk, *args, **kwargs):
+#         try:
+#             chp = Role.objects.get(pk=pk)
+#             if 'rqcode' not in request.data:
+#                 return Response({'success': 0, 'message': 'rqcode is required'}, status=status.HTTP_400_BAD_REQUEST)
+#             serializer = RoleSerializer(chp, data=request.data)
+#             serializer.is_valid(raise_exception=True)
+#             serializer.save()
+#             return Response({'success': 1, 'message': 'Data Updated', 'result': serializer.data})
+#         except Role.DoesNotExist:
+#             return Response({'success': 0, 'message': 'Not Found'})
 
-    def destroy(self, request, pk, *args, **kwargs):
-        try:
-            machine = Role.objects.get(pk=pk)
+#     def destroy(self, request, pk, *args, **kwargs):
+#         try:
+#             machine = Role.objects.get(pk=pk)
 
-            machine.delete()
-            # chp = Role.objects.get(pk=pk)
-            # chp.delete()
-            return Response({'success': 1, 'message': 'Data Deleted'})
-        except Role.DoesNotExist:
-            return Response({'success': 0, 'message': 'Not Found'})
+#             machine.delete()
+#             # chp = Role.objects.get(pk=pk)
+#             # chp.delete()
+#             return Response({'success': 1, 'message': 'Data Deleted'})
+#         except Role.DoesNotExist:
+#             return Response({'success': 0, 'message': 'Not Found'})
 
-class ModuleViewSet(viewsets.ModelViewSet):
-    queryset = Module.objects.all()
-    serializer_class = ModuleSerializer
 
-class SubModuleViewSet(viewsets.ModelViewSet):
-    queryset = SubModule.objects.all()
-    serializer_class = SubModuleSerializer
 
-class RoleModuleAssignmentViewSet(viewsets.ModelViewSet):
-    queryset = RoleModuleAssignment.objects.all()
-    serializer_class = RoleModuleAssignmentSerializer
-
-# class RoleSubModuleAssignmentViewSet(viewsets.ModelViewSet):
-#     queryset = RoleSubModuleAssignment.objects.all()
-#     serializer_class = RoleSubModuleAssignmentSerializer
-
-@api_view(['GET'])
-def get_modules_for_role(request, role_id):
-    role = get_object_or_404(Role, id=role_id)
-    modules = Module.objects.filter(role_assignments__role=role)
-    submodules = SubModule.objects.filter(role_assignments__role=role)
-    
-    module_serializer = ModuleSerializer(modules, many=True)
-    submodule_serializer = SubModuleSerializer(submodules, many=True)
-    
-    return Response({
-        'modules': module_serializer.data,
-        'submodules': submodule_serializer.data
-    })
-from django.contrib.auth.models import Permission
-
-from django.contrib.auth.models import Group
 from userapp.models import User
 from django.contrib.contenttypes.models import ContentType
-# from django.contrib.auth.models import User, Group
 
-class RoleWithModulesOrSubModulesAPIView(APIView):
+class CreateRoleWithModulesOrSubModulesAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        user_profile = request.user
-        if user_profile.role != '2':  # Adjust as per your role checking logic
-            return Response({'error': 'You do not have permission to assign permissions.'}, status=status.HTTP_403_FORBIDDEN)
-
         data = request.data
         role_name = data.get('role_name')
-        modules = data.get('modules')
+        modules_data = data.get('modules')
 
-        if not role_name:
-            return Response({'error': 'Role name is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not role_name or not modules_data:
+            return Response({'error': 'Role name and modules data are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        role, created = Role.objects.get_or_create(name=role_name)
+        role = Role.objects.create(name=role_name)
 
-        for module_data in modules:
+        for module_data in modules_data:
             module_name = module_data.get('name')
             submodules_data = module_data.get('submodules')
 
-            module, created = Module.objects.get_or_create(name=module_name, role=role)
+            module = Module.objects.create(name=module_name)
 
             for submodule_data in submodules_data:
                 submodule_name = submodule_data.get('name')
                 permissions_data = submodule_data.get('permissions')
 
-                submodule, created = SubModule.objects.get_or_create(name=submodule_name, module=module)
+                submodule = SubModule.objects.create(name=submodule_name)
 
                 for permission_data in permissions_data:
                     permission_name = permission_data.get('name')
-                    codename = permission_data.get('codename')
+                    permission_codename = permission_data.get('codename')
 
-                    custom_permission, created = CustomPermission.objects.get_or_create(
+                    permission, created = CustomPermission.objects.get_or_create(
                         name=permission_name,
-                        codename=codename,
-                        submodule=submodule
+                        codename=permission_codename
                     )
+                    submodule.permissions.add(permission)
 
-                    content_type = ContentType.objects.get_for_model(CustomPermission)
-                    permission, created = Permission.objects.get_or_create(
-                        codename=codename,
-                        name=permission_name,
-                        content_type=content_type
-                    )
+                submodule.save()
+                module.submodules.add(submodule)
 
-                    # Add the built-in permission to the role
-                    role.permissions.add(permission)
+            module.save()
+            role.modules.add(module)
 
-        return Response({'message': 'Role, modules, and sub-modules created successfully'}, status=status.HTTP_200_OK)
+        role.save()
+        serializer = RoleSerializer(role)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class UpdateRolePermissionsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        role_name = data.get('role_name')
+        additional_permissions_data = data.get('permissions')
+
+        if not role_name or not additional_permissions_data:
+            return Response({'error': 'Role name and additional permissions are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if the role exists
+        role = Role.objects.filter(name=role_name).first()
+
+        if not role:
+            return Response({'error': f'Role with name "{role_name}" does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+        for permission_data in additional_permissions_data:
+            permission_name = permission_data.get('name')
+            permission_codename = permission_data.get('codename')
+
+            permission, created = CustomPermission.objects.get_or_create(
+                name=permission_name,
+                codename=permission_codename
+            )
+            role.permissions.add(permission)
+
+        role.save()
+        serializer = RoleSerializer(role)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+class AddPermissionsToRoleAPIView(APIView):
+    def post(self, request, role_id):
+        permissions = request.data.get('permissions', [])
+        role = get_object_or_404(Role, pk=role_id)
+        
+        # Add permissions to the role
+        role.add_permissions(permissions)
+        
+        return Response({'message': 'Permissions added to role successfully'}, status=status.HTTP_200_OK)
+class CreateOnlyPermissionRoleWithPermissionsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        role_name = data.get('role_name')
+        permissions_data = data.get('permissions')
+
+        if not role_name or not permissions_data:
+            return Response({'error': 'Role name and permissions data are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        role, created = Role.objects.get_or_create(name=role_name)
+
+        for permission_data in permissions_data:
+            permission_name = permission_data.get('name')
+            permission_codename = permission_data.get('codename')
+
+            permission, created = CustomPermission.objects.get_or_create(
+                name=permission_name,
+                codename=permission_codename
+            )
+            role.permissions.add(permission)
+
+        role.save()
+        serializer = RoleSerializer(role)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+from userapp.serializers import UserMasterSerializer
 
 class AssignRoleToUserAPIView(APIView):
     permission_classes = [IsAuthenticated]
-
     def post(self, request):
         data = request.data
         user_id = data.get('user_id')
         role_name = data.get('role_name')
 
-        user = User.objects.get(id=user_id)
-        role = Role.objects.get(name=role_name)
+        if not user_id or not role_name:
+            return Response({'error': 'User ID and Role name are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        role.users.add(user)
+        user = get_object_or_404(User, id=user_id)
+        role = get_object_or_404(Role, name=role_name)
 
-        # Get the built-in Permission instances associated with the role's custom permissions
-        permissions = role.permissions.all()
-        user.user_permissions.set(permissions)
+        # Fetch permissions associated with the role
+        # permissions = role.permissions.all()
+        permissions = CustomPermission.objects.filter(submodules__modules__roles=role).distinct()
 
-        return Response({'message': 'Role and permissions assigned to user successfully'}, status=status.HTTP_200_OK)
+        print(permissions,'permissssionnnnss')
+        if not permissions.exists():
+            return Response({'error': 'No permissions found for the specified role'}, status=status.HTTP_404_NOT_FOUND)
+
+        # # Assign fetched permissions to the user
+        # for permission in permissions:
+        #     user.permissions.add(permission)
+
+        # user.rolesname.add(role)
+        # user.save()
+        # Assign fetched permissions to the user
+        user.permissions.set(permissions)
+        user.rolesname.add(role)
+        user.save()
+
+     
+        serializer = UserMasterSerializer(user)
+    
+        return Response({'success': f'Role {role_name} assigned to user {user_id}', 'user': serializer.data}, status=status.HTTP_200_OK)
 
 
-# class UserRolesModulesAndSubModulesAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
+from userapp.permissions import CustomPermissionRequired
 
-#     def get(self, request):
-#         user = request.user
-#         roles = user.roles.all()
 
-#         if not roles:
-#             return Response({'error': 'User has no roles assigned'}, status=status.HTTP_404_NOT_FOUND)
-
-#         data = []
-
-#         for role in roles:
-#             role_data = {
-#                 'role_name': role.name,
-#                 'modules': []
-#             }
-#             modules = Module.objects.filter(role=role)
-#             for module in modules:
-#                 module_data = {
-#                     'module_name': module.name,
-#                     'submodules': []
-#                 }
-#                 submodules = SubModule.objects.filter(module=module)
-#                 for submodule in submodules:
-#                     permissions = CustomPermission.objects.filter(submodule=submodule)
-#                     permission_data = [{'name': permission.name, 'codename': permission.codename} for permission in permissions]
-#                     module_data['submodules'].append({
-#                         'name': submodule.name,
-#                         'permissions': permission_data
-#                     })
-#                 role_data['modules'].append(module_data)
-#             data.append(role_data)
-
-#         return Response(data, status=status.HTTP_200_OK)
 class UserRolesModulesAndSubModulesAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        user_id = user.id
-        roles = Role.objects.filter(users=user)
+        roles = user.roles.all()
         roles_data = []
 
         for role in roles:
-            modules = Module.objects.filter(role=role)
+            modules = role.modules.all()
             modules_data = []
 
             for module in modules:
-                submodules = SubModule.objects.filter(module=module)
+                submodules = module.submodules.all()
                 submodules_data = []
 
                 for submodule in submodules:
-                    permissions = CustomPermission.objects.filter(submodule=submodule)
+                    permissions = submodule.permissions.all()
                     permissions_data = CustomPermissionSerializer(permissions, many=True).data
                     submodules_data.append({
                         'name': submodule.name,
@@ -7135,7 +7152,7 @@ class UserRolesModulesAndSubModulesAPIView(APIView):
             })
 
         response_data = {
-            'user_id': user_id,
+            'user_id': user.id,
             'roles': roles_data
         }
 

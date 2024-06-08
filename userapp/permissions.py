@@ -13,61 +13,39 @@ class userWriteOnly(permissions.BasePermission):
             request.user
         )
 
-from rest_framework import permissions
-
-from machinedataapp.models import CustomPermission
-
-# class CustomPermissionRequired(permissions.BasePermission):
-#     def has_permission(self, request, view):
-#         # Check if the user has the necessary custom permissions
-#         if request.user.is_authenticated:
-#             user_permissions = request.user.custom_permissions.all()
-#             required_permission_codenames = CustomPermission.objects.values_list('codename', flat=True)
-#             return any(perm in required_permission_codenames for perm in user_permissions)
-#         return False
-
-
-
+from rest_framework.exceptions import PermissionDenied
 
 class CustomPermissionRequired(permissions.BasePermission):
+    # message = "You have only view permission and you do not have permission to perform this action."
     def has_permission(self, request, view):
-        
         if request.user.is_authenticated:
-            print(request.user.role,'give me ')
             # Allow all requests if the user's role is 2
             if request.user.role == '2':
                 return True
+            
             # Otherwise, check for custom permissions
+            required_permissions = self.get_required_permissions(view, request.method)
+            user_permissions = request.user.permissions.values_list('codename', flat=True)
+            
+            # Check if user has any of the required permissions
+            if set(required_permissions).intersection(set(user_permissions)):
+                return True
             else:
-                user_permissions = request.user.permissions.all() if request.user.permissions else None
-                required_permission_codenames = CustomPermission.objects.values_list('codename', flat=True)
-                return any(perm.codename in required_permission_codenames for perm in user_permissions)
-        return False
-    # def has_permission(self, request, view):
-    #     if request.user.is_authenticated:
-    #         print(request.user, 'check permission')
-    #         # Get all custom permissions
-    #         custom_permissions = CustomPermission.objects.all()
-    #         # Check if the user has any custom permissions associated with role 2
-    #         has_permission = any(
-    #             perm.id in request.user.custom_permissions.values_list('id', flat=True) and perm.role == '2'
-    #             for perm in custom_permissions
-    #         )
-    #         # Return True if the user doesn't have any such permission
-    #         return not has_permission
-    #     return False
+                # Construct custom error message
+                missing_permissions = list(set(required_permissions) - set(user_permissions))
+                message = f'You do not have permission to perform this action. Missing permissions: {missing_permissions}'
+                raise PermissionDenied(detail=message)
+
+    def get_required_permissions(self, view, method):
+        # Define this function to return a list of required permissions for each action
+        if method in ['GET', 'OPTIONS', 'HEAD']:
+            return ['view_permission']
+        elif method == 'POST':
+            return ['add_permission']
+        elif method in ['PUT', 'PATCH']:
+            return ['change_permission']
+        elif method == 'DELETE':
+            return ['delete_permission']
+        return []
     
     
-        # if request.user.is_authenticated:
-        #     print(request.user, 'check permission')
-        #     # Get the permissions associated with the logged-in user
-        #     user_permissions = request.user.permissions.all()
-        #     # Print the permissions
-        #     print("Permissions assigned to the logged-in user:")
-        #     for permission in user_permissions:
-        #         print(f"- {permission} check it per mission")
-        #     # Your permission logic goes here
-        #     # For example, check if the user has the necessary permission
-        #     # ...
-        #     return True  # Assuming you want to allow access for now
-        # return False

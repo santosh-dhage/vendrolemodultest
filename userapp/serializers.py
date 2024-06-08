@@ -4,26 +4,14 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 # from django.contrib.auth.models import User
-
+from machinedataapp.serializers import RoleSerializer,CustomPermissionSerializer
 class UserMasterSerializer(serializers.ModelSerializer):
+    rolesname = RoleSerializer(many=True)
+    permissions = CustomPermissionSerializer(many=True)
     class Meta:
         model = User
         fields = '__all__'
         # depth=3
-
-
-    # def create(self, validated_data):
-    #     print(validated_data,'validated data')
-    #     # Set created_by to the username of the user who made the request
-    #     created_by_username = self.context['request'].user.id
-    #     print(created_by_username,'hello')
-    #     user = get_user_model().objects.create_user(created_by=created_by_username, **validated_data)
-    #     print(user,'user')
-    #     return user
-
-
-        # Create and return the user
-        # return User.objects.create(**validated_data)
     
 class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()

@@ -56,9 +56,9 @@ class User(AbstractUser):
     status=models.BooleanField(default=True,null=True,blank=True)
     profile_img=models.ImageField(upload_to='images/',null=True,blank=True,default='anonymous.jpg')
 
-    rolename=models.ForeignKey(Role,on_delete=models.CASCADE,blank=True, null=True)
-    permissions = models.ForeignKey(CustomPermission, on_delete=models.CASCADE, null=True, blank=True)
-    
+    rolesname = models.ManyToManyField(Role, related_name='users_rolesname_permisiiom', blank=True)
+    permissions = models.ManyToManyField(CustomPermission, related_name='custompermission_users_permission', blank=True)
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
