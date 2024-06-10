@@ -344,7 +344,7 @@ userinfo.numbers.map((item)=>{let options={'name':item};permission_data.push(opt
                           id="flexCheckDefault"
                           name="check10"
                           onChange={handleChange}
-                          value={" Map Customer"}
+                          value={"Map Customer"}
                         />
                       </CTableDataCell>
 
@@ -496,6 +496,36 @@ userinfo.numbers.map((item)=>{let options={'name':item};permission_data.push(opt
 
                     </CTableRow>
 
+                    <CTableRow>
+                      <CTableHeaderCell scope="row">21</CTableHeaderCell>
+                      
+                      <CTableDataCell>Feedback</CTableDataCell>
+                      <CTableDataCell></CTableDataCell>
+                      <CTableDataCell>
+                        <CFormCheck
+                          id="flexCheckDefault"
+                          name="check21"
+                          onChange={handleChange}
+                          value={"Feedback"}
+                        />
+                      </CTableDataCell>
+
+                    </CTableRow>
+                    <CTableRow>
+                      <CTableHeaderCell scope="row">22</CTableHeaderCell>
+                      
+                      <CTableDataCell>Ticket</CTableDataCell>
+                      <CTableDataCell></CTableDataCell>
+                      <CTableDataCell>
+                        <CFormCheck
+                          id="flexCheckDefault"
+                          name="check22"
+                          onChange={handleChange}
+                          value={"Ticket"}
+                        />
+                      </CTableDataCell>
+
+                    </CTableRow>
                   </CTableBody>
                 </CTable>
                 <CButton type="submit"

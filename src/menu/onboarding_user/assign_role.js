@@ -130,16 +130,16 @@ const Projects = () => {
         if (!role) {
           alert('Please select the role')
         }
-        else if (!email) {
+        else if (!e.target.assign_emp.value) {
           alert('Please select the employee mail id')
         }
-        // else {
-        //   let response1 = await api.put(`/api/user_infoViewSet/${emp.value}/`, {
-        //     permissions: role,
-        //     email: email,
-        //     username : email ,
-        //     password: "Renew@2024",
-        //   })
+        else {
+          let response1 = await api.post('machine/assignpermissions/', {
+            role_name: role,
+            user_id: e.target.assign_emp.value,
+            // username : email ,
+            // password: "Renew@2024",
+          })
         //   if (response1.status === 200) {
         //     setisSubmitting(false)
         //     alert('Data Submited')
@@ -148,7 +148,7 @@ const Projects = () => {
         //   } else {
         //     alert('Something went wrong!')
         //   }
-        // }
+        }
     }
 
     const updateProject = async (e) => {

@@ -7164,4 +7164,4 @@ class UserRolesModulesAndSubModulesAPIView(APIView):
             'roles': roles_data
         }
 
-        return Response(response_data)
+        return Response({'success':1,'result':response_data})
