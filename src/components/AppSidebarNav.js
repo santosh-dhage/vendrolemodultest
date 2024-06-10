@@ -87,18 +87,8 @@ export const AppSidebarNav = ({ items }) => {
         visible={location.pathname.startsWith(to)}
         {...rest}
       >
-        {/* {item.items?.map((item, index) =>
-       
-          // (item.name !='Reports') ?(item.items ? navGroup(item, index) : navItem(item, index)):
-          // (modules.includes(item.name)?(item.items ? navGroup(item, index) : navItem(item, index)):'')
-          // ,
-           
-          modules.includes(item.name)?(item.items ? navGroup(item, index) : navItem(item, index)):''
-
-          // item.items ? navGroup(item, index) : navItem(item, index)
-
-        )} */}
-
+     
+      {/* 
         {item.name == 'Reports'
           ? item.items?.map((item, index) =>
               modules.includes(item.name)
@@ -110,6 +100,10 @@ export const AppSidebarNav = ({ items }) => {
           : item.items?.map((item, index) =>
               item.items ? navGroup(item, index) : navItem(item, index),
             )}
+             */}
+        {item.items?.map((item, index) =>
+          item.items ? navGroup(item, index) : navItem(item, index),
+        )}
       </Component>
     )
   }

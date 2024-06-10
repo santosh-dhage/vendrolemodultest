@@ -60,7 +60,6 @@ class UserMasterViewSet(viewsets.ModelViewSet):
     serializer_class = UserMasterSerializer
     permission_classes = [IsAuthenticated, CustomPermissionRequired]
 
-    
     def list(self, request, *args, **kwargs):
         try:
             queryset = User.objects.all().order_by('-id')

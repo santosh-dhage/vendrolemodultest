@@ -6978,7 +6978,6 @@ from .serializers import RoleSerializer, ModuleSerializer, SubModuleSerializer, 
 
 from userapp.models import User
 from django.contrib.contenttypes.models import ContentType
-
 class CreateRoleWithModulesOrSubModulesAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -7023,6 +7022,48 @@ class CreateRoleWithModulesOrSubModulesAPIView(APIView):
         role.save()
         serializer = RoleSerializer(role)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+# class CreateRoleWithModulesOrSubModulesAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         data = request.data
+#         role_name = data.get('role_name')
+#         modules_data = data.get('modules')
+
+#         if not role_name or not modules_data:
+#             return Response({'error': 'Role name and modules data are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+#         role = Role.objects.create(name=role_name)
+
+#         for module_data in modules_data:
+#             module_name = module_data.get('name')
+#             submodules_data = module_data.get('submodules')
+
+#             module = Module.objects.create(name=module_name)
+
+#             # No need to handle submodules and permissions here
+
+#                 submodule = SubModule.objects.create(name=submodule_name)
+
+#                 for permission_data in permissions_data:
+#                     permission_name = permission_data.get('name')
+#                     permission_codename = permission_data.get('codename')
+
+#                     permission, created = CustomPermission.objects.get_or_create(
+#                         name=permission_name,
+#                         codename=permission_codename
+#                     )
+#                     submodule.permissions.add(permission)
+
+#                 submodule.save()
+#                 module.submodules.add(submodule)
+
+#             module.save()
+#             role.modules.add(module)
+
+#         role.save()
+#         serializer = RoleSerializer(role)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
 class AddModulesOrSubModulesToRoleAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -7217,4 +7258,4 @@ class UserRolesModulesAndSubModulesAPIView(APIView):
             'roles': roles_data
         }
 
-        return Response(response_data)
+        return Response({'success':1,'result':response_data})

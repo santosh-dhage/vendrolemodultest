@@ -74,7 +74,7 @@ const Projects = () => {
 
   let getcreate_project = async () => {
     let response = await api.get('/machine/roles/')
-    if (response.success === 1) {
+    if (response.data.success === 1) {
       setNotes(response.data.result)
     } else {
       alert('something went wrong')
@@ -117,6 +117,7 @@ const Projects = () => {
           <CCard className="mb-1 shadow bg-body rounded">
             <CCardBody>
       <CTable>
+
         <CTableHead>
           <CTableRow>
             <CTableHeaderCell scope="col"> Available Roles </CTableHeaderCell>
@@ -129,6 +130,7 @@ const Projects = () => {
             <CTableHeaderCell scope="col">Action</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
+
         <CTableBody>
           {notes.map((note,index) => (
             <CTableRow > 
