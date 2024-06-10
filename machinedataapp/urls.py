@@ -2,7 +2,8 @@ from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 from .views import *
 from machinedataapp import views
-router = DefaultRouter()
+from userapp.routers import CustomRouter
+router = CustomRouter()
 router.register(r'qrcode', QrCodeViewSet, basename='qrcode')
 router.register(r'machine-masters', MachineMasterViewSet, basename='machine-master')
 router.register(r'machine-user-mapping', MachineUserMappingViewSet, basename='machine-user-mapping')
@@ -157,6 +158,7 @@ urlpatterns = [
     # path('upload-excel/', ExcelFileUploadView.as_view(), name='upload-excel'),
 
     path('createrolewithmodulesorsubmodules/',  CreateRoleWithModulesOrSubModulesAPIView.as_view()),
+    path('addmorerolewithmodulesorsubmodules/',  AddModulesOrSubModulesToRoleAPIView.as_view()),
     path('updaterolewithmodulesorsubmodules/',  UpdateRolePermissionsAPIView.as_view()),
     path('createonlypermisionrolewithmodulesorsubmodules/',  CreateOnlyPermissionRoleWithPermissionsAPIView.as_view()),
     path('AddPermissionsToRoleAPIView/<int:role_id>',  AddPermissionsToRoleAPIView.as_view()),

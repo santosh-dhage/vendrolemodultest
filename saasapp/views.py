@@ -941,7 +941,10 @@ class ModuleMappingViewSet(ModelViewSet):
         
 #     except Exception as e:
 #         return Response({'success': 0, 'message': str(e)})
+from rest_framework.permissions import AllowAny,IsAuthenticatedOrReadOnly
+
 @api_view(['GET'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def get_organization_data_only(request):
     try:
         logged_in_tenant_id = request.tenant.user_id

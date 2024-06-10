@@ -6,13 +6,19 @@ from rest_framework.response import Response
 # from django.contrib.auth.models import User
 from machinedataapp.serializers import RoleSerializer,CustomPermissionSerializer
 class UserMasterSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = '__all__'
+        # depth=3
+
+class UserMasterSerializer1(serializers.ModelSerializer):
     rolesname = RoleSerializer(many=True)
     permissions = CustomPermissionSerializer(many=True)
     class Meta:
         model = User
         fields = '__all__'
-        # depth=3
-    
+
 class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
 

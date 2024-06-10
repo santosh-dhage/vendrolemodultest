@@ -37,6 +37,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from .serializers import *
 import datetime
+
 BROKER = '65.109.139.161'
 PORT = 1883
 MQTT_USERNAME = 'lldnoeHIULHU87678'
@@ -4723,3 +4724,17 @@ import time
 #         logging.error(f'Error creating user: {str(e)}')
 #         logging.info(f"Time taken for create_user: {elapsed_time} seconds")
 #         return Response({'success': 0, 'message': 'Error creating user'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+from rest_framework.views import APIView
+
+class CustomAPIRoot(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        return Response({
+            'message': 'Welcome to the API'
+        })
+class EmptyRootView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        return Response({"Go Back Don't Be Too Smart."})

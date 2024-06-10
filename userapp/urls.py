@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import MQTTDataViewSet, MOrderViewSet, MStatusViewSet, PaymentHistoryViewSet,UserMasterViewSet,ChangePasswordView ,CustomEmailViewSet
 from userapp import views
-router = DefaultRouter()
+from .routers import CustomRouter
+router = CustomRouter()
 router.register(r'users', UserMasterViewSet, basename='users')
 router.register(r'mqttdata', MQTTDataViewSet)
 router.register(r'morder', MOrderViewSet)

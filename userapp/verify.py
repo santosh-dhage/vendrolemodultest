@@ -17,7 +17,10 @@ class JWTAuthentication(BaseAuthentication):
 
         User = get_user_model()
         authorization_heaader = request.headers.get('Authorization')
-
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key != settings.API_KEY:
+            # return HttpResponseRedirect('/')
+            raise exceptions.AuthenticationFailed( 'Access Denied')
         if not authorization_heaader:
             return None
         try:

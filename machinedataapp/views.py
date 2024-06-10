@@ -2611,8 +2611,10 @@ def get_cutomer_user_dashboard_machine_mapping_percentage(request):
 #             return Response({'success':0,'message': 'Site settings not found for the current tenant'}, status=status.HTTP_404_NOT_FOUND)
 #     else:
 #         return Response({'success':0,'message': 'Tenant not found in the request'}, status=status.HTTP_400_BAD_REQUEST)
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def site_settings_api_for_logo(request):
     # Ensure that the tenant attribute exists in the request object
     # It's assumed that you're using Django Tenant Schemas or similar multi-tenancy setup
@@ -3008,10 +3010,19 @@ def get_machine_details_view(request, id):
 #         serializer.save()
 #         return Response({'success':1,'message':'Data Found','result':serializer.data}, status=status.HTTP_200_OK)
 #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
 class ColorStoreViewSet(viewsets.ModelViewSet):
     queryset = ColorStore.objects.all()
     serializer_class = ColorStoreSerializer
-    # permission_classes=[IsAuthenticated]
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [AllowAny]
+        elif self.action == 'create':
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
 
     def list(self, request, *args, **kwargs):
         try:
@@ -3026,16 +3037,22 @@ class ColorStoreViewSet(viewsets.ModelViewSet):
             chp = ColorStore.objects.get(pk=pk)
             serializer = ColorStoreSerializer(chp)
             return Response({'success': 1, 'message': 'Data Found', 'result': serializer.data})
-        except Product.DoesNotExist:
+        except ColorStore.DoesNotExist:
             return Response({'success': 0, 'message': 'Not Found'})
 
     def create(self, request, *args, **kwargs):
         try:
+            # Get the color name from the request data
+            color_name = request.data.get('color_name')
             
+            # Check if a color with the same name already exists
+            existing_color = ColorStore.objects.filter(color_name=color_name).first()
+            if existing_color:
+                # Delete the existing color
+                existing_color.delete()
+
             serializer = ColorStoreSerializer(data=request.data)
-            
             serializer.is_valid(raise_exception=True)
-    
             serializer.save()
 
             return Response({'success': 1, 'message': 'Data Created', 'result': serializer.data})
@@ -3049,7 +3066,7 @@ class ColorStoreViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response({'success': 1, 'message': 'Data Updated', 'result': serializer.data})
-        except Product.DoesNotExist:
+        except ColorStore.DoesNotExist:
             return Response({'success': 0, 'message': 'Not Found'})
 
     def destroy(self, request, pk, *args, **kwargs):
@@ -3057,7 +3074,7 @@ class ColorStoreViewSet(viewsets.ModelViewSet):
             chp = ColorStore.objects.get(pk=pk)
             chp.delete()
             return Response({'success': 1, 'message': 'Data Deleted'})
-        except Product.DoesNotExist:
+        except ColorStore.DoesNotExist:
             return Response({'success': 0, 'message': 'Not Found'})
 
 # from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -7006,7 +7023,50 @@ class CreateRoleWithModulesOrSubModulesAPIView(APIView):
         role.save()
         serializer = RoleSerializer(role)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+class AddModulesOrSubModulesToRoleAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        data = request.data
+        role_name = data.get('role_name')
+        modules_data = data.get('modules')
+
+        if not role_name or not modules_data:
+            return Response({'error': 'Role name and modules data are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        role = get_object_or_404(Role, name=role_name)
+
+        for module_data in modules_data:
+            module_name = module_data.get('name')
+            submodules_data = module_data.get('submodules', [])
+
+            module, created = Module.objects.get_or_create(name=module_name)
+
+            for submodule_data in submodules_data:
+                submodule_name = submodule_data.get('name')
+                permissions_data = submodule_data.get('permissions', [])
+
+                submodule, created = SubModule.objects.get_or_create(name=submodule_name)
+
+                for permission_data in permissions_data:
+                    permission_name = permission_data.get('name')
+                    permission_codename = permission_data.get('codename')
+
+                    permission, created = CustomPermission.objects.get_or_create(
+                        name=permission_name,
+                        codename=permission_codename
+                    )
+                    submodule.permissions.add(permission)
+
+                submodule.save()
+                module.submodules.add(submodule)
+
+            module.save()
+            role.modules.add(module)
+
+        role.save()
+        serializer = RoleSerializer(role)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 class UpdateRolePermissionsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -7037,6 +7097,7 @@ class UpdateRolePermissionsAPIView(APIView):
         role.save()
         serializer = RoleSerializer(role)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
 class AddPermissionsToRoleAPIView(APIView):
     def post(self, request, role_id):
         permissions = request.data.get('permissions', [])
@@ -7074,7 +7135,7 @@ class CreateOnlyPermissionRoleWithPermissionsAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-from userapp.serializers import UserMasterSerializer
+from userapp.serializers import UserMasterSerializer1
 
 class AssignRoleToUserAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -7109,7 +7170,7 @@ class AssignRoleToUserAPIView(APIView):
         user.save()
 
      
-        serializer = UserMasterSerializer(user)
+        serializer = UserMasterSerializer1(user)
     
         return Response({'success': f'Role {role_name} assigned to user {user_id}', 'user': serializer.data}, status=status.HTTP_200_OK)
 
