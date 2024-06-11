@@ -58,7 +58,7 @@ from .permissions import CustomPermissionRequired
 class UserMasterViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserMasterSerializer
-    permission_classes = [IsAuthenticated, CustomPermissionRequired]
+    permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
         try:
@@ -903,65 +903,203 @@ import base64
 import jwt
 import json
 from paho.mqtt import client as mqtt
+#old 
+# @api_view(['POST'])
+# @csrf_exempt
+# def paymentcallback(request):
+#     if request.method == 'POST':
+#         try:
+#             encoded_string = request.data['response']
+#             logging.info(f'payment Data: {str(encoded_string)}')
+#             jwt_token = base64.urlsafe_b64decode(encoded_string + '=' * (4 - len(encoded_string) % 4))
+#             logging.info(f'payment Data: {str(jwt_token)}')
+#             json_string = jwt_token.decode('utf-8')
+
+#             # Parse the JSON string to a Python dictionary
+#             json_data = json.loads(json_string)
+#             # MQTT message payload (response)
+#             if json_data['code'] ==  'PAYMENT_SUCCESS':
+#                 print(json_data['data'])
+#                 storeName= QrCode.objects.filter(qr_code_id = json_data['data']['storeId'])
+#                 logging.info(f'payment Data: {str(storeName)}')
+#                 if len(storeName) != 0:
+#                     payload = json.dumps({
+#                         "MACHINE_ID": storeName[0].qr_store_name,
+#                         "AID": json_data['data']['merchantId'],
+#                         "TID": json_data['data']['transactionId'],
+#                         "RID": json_data['data']['terminalId'],
+#                         "QTY":1
+#                         })
+
+#                     paho.mqtt.publish.single(TOPIC_M_ORDER, payload, hostname=BROKER, port=PORT , auth={'username': MQTT_USERNAME, 'password': MQTT_PASSWORD})
+#             return JsonResponse({'success': 1, 'message': 'Data Found', 'result': json_data})
+#         except Exception as e:
+#             logging.error(f'Error payment: {str(e)}')
+#             return JsonResponse({'success': 0, 'message': 'Not Found', 'result': ''})
+payment_logger = logging.getLogger('payment_logger')
 
 @api_view(['POST'])
 @csrf_exempt
 def paymentcallback(request):
     if request.method == 'POST':
         try:
-            encoded_string = request.data['response']
-            logging.info(f'payment Data: {str(encoded_string)}')
-            jwt_token = base64.urlsafe_b64decode(encoded_string + '=' * (4 - len(encoded_string) % 4))
-            logging.info(f'payment Data: {str(jwt_token)}')
-            json_string = jwt_token.decode('utf-8')
+            encoded_string = request.data.get('response')
+            payment_logger.info(f'Payment Data (encoded): {encoded_string}')
+            
+            if not encoded_string:
+                payment_logger.error('Encoded string is missing or empty')
+                return JsonResponse({'success': 0, 'message': 'Missing encoded string in request data'})
 
-            # Parse the JSON string to a Python dictionary
-            json_data = json.loads(json_string)
-            # MQTT message payload (response)
-            if json_data['code'] ==  'PAYMENT_SUCCESS':
-                print(json_data['data'])
-                storeName= QrCode.objects.filter(qr_code_id = json_data['data']['storeId'])
-                logging.info(f'payment Data: {str(storeName)}')
-                if len(storeName) != 0:
+            try:
+                padded_encoded_string = encoded_string + '=' * (4 - len(encoded_string) % 4)
+                jwt_token = base64.urlsafe_b64decode(padded_encoded_string)
+                payment_logger.info(f'Payment Data (decoded JWT): {jwt_token}')
+            except Exception as decode_error:
+                payment_logger.error(f'Error decoding JWT token: {decode_error}', exc_info=True)
+                return JsonResponse({'success': 0, 'message': 'Error decoding JWT token', 'result': str(decode_error)})
+
+            try:
+                json_string = jwt_token.decode('utf-8')
+                json_data = json.loads(json_string)
+                payment_logger.info(f'Payment Data (JSON): {json_data}')
+            except Exception as json_decode_error:
+                payment_logger.error(f'Error decoding JSON data: {json_decode_error}', exc_info=True)
+                return JsonResponse({'success': 0, 'message': 'Error decoding JSON data', 'result': str(json_decode_error)})
+
+            required_fields = ['code', 'data']
+            if not all(field in json_data for field in required_fields):
+                payment_logger.error(f'Missing required fields in JSON data: {json_data}')
+                return JsonResponse({'success': 0, 'message': 'Missing required fields in JSON data'})
+
+            if json_data.get('code') == 'PAYMENT_SUCCESS':
+                data_fields = ['storeId', 'merchantId', 'transactionId', 'terminalId']
+                if not all(field in json_data['data'] for field in data_fields):
+                    payment_logger.error(f'Missing required data fields in JSON data: {json_data["data"]}')
+                    return JsonResponse({'success': 0, 'message': 'Missing required data fields in JSON data'})
+
+                store_name_record = QrCode.objects.filter(qr_store_name=json_data['data'].get('storeId'))
+                if store_name_record.exists():
+                    store_name = store_name_record.first().qr_store_name
+                    payment_logger.info(f'Store Name: {store_name}')
+                    
                     payload = json.dumps({
-                        "MACHINE_ID": storeName[0].qr_store_name,
-                        "AID": json_data['data']['merchantId'],
-                        "TID": json_data['data']['transactionId'],
-                        "RID": json_data['data']['terminalId'],
-                        "QTY":1
-                        })
+                        "MACHINE_ID": store_name,
+                        "AID": json_data['data'].get('merchantId'),
+                        "TID": json_data['data'].get('transactionId'),
+                        "RID": json_data['data'].get('terminalId'),
+                        "QTY": 1
+                    })
+                    payment_logger.info(f'MQTT Payload: {payload}')
+                    
+                    try:
+                        paho.mqtt.publish.single(TOPIC_M_ORDER, payload, hostname=BROKER, port=PORT, auth={'username': MQTT_USERNAME, 'password': MQTT_PASSWORD})
+                        payment_logger.info('Payment success and MQTT message published successfully')
+                    except Exception as mqtt_publish_error:
+                        payment_logger.error(f'Error publishing to MQTT: {mqtt_publish_error}', exc_info=True)
+                        return JsonResponse({'success': 0, 'message': 'Error publishing to MQTT', 'result': str(mqtt_publish_error)})
+                else:
+                    payment_logger.warning(f'Store ID {json_data["data"].get("storeId")} not found in the database')
+                    return JsonResponse({'success': 0, 'message': 'Store ID not found', 'result': 'Store ID not found in the database'})
+            else:
+                payment_logger.warning(f'Payment failed with code: {json_data.get("code")}')
+                return JsonResponse({'success': 0, 'message': 'Payment failed', 'result': json_data})
 
-                    paho.mqtt.publish.single(TOPIC_M_ORDER, payload, hostname=BROKER, port=PORT , auth={'username': MQTT_USERNAME, 'password': MQTT_PASSWORD})
             return JsonResponse({'success': 1, 'message': 'Data Found', 'result': json_data})
+        
         except Exception as e:
-            logging.error(f'Error payment: {str(e)}')
-            return JsonResponse({'success': 0, 'message': 'Not Found', 'result': ''})
-
+            payment_logger.error(f'Error processing payment: {e}', exc_info=True)
+            return JsonResponse({'success': 0, 'message': 'An error occurred', 'result': str(e)})
+        
+# @api_view(['GET'])
+# @csrf_exempt
+# def paymentsuccess(request):
+#     if request.method == 'GET':
+#         try:
+#             json_data={"success": True,"code": "PAYMENT_SUCCESS","message": "Your payment is successful.","data": {"merchantId": "INDEFTTECHNOLOGYSOLUTIONS","transactionId": "TXSCAN2403011707204009674431","providerReferenceId": "T2403011707226646428279","amount": 500,"updateTimestamp": 1709293046573,"paymentState": "COMPLETED","payResponseCode": "SUCCESS","transactionContext": {"qrCodeId": "EQR2402271212310092552891","storeId": "MS2402231810481193910571","terminalId": "ET2402271212310102552082"},"storeId": "MS2402231810481193910571","terminalId": "ET2402271212310102552082"}}
+#             if json_data['code'] ==  'PAYMENT_SUCCESS':
+#                 print(json_data['data'])
+#                 storeName= QrCode.objects.filter(qr_code_id = json_data['data']['storeId'])
+#                 print('hello')
+#                 payment_logger.info('Data Of payment Success')
+#                 print(storeName)
+#                 if len(storeName) != 0: 
+#                     payload = json.dumps({
+#                         "MACHINE_ID": storeName[0].qr_store_name,
+#                         "AID": json_data['data']['merchantId'],
+#                         "TID": json_data['data']['transactionId'],
+#                         "RID": json_data['data']['terminalId'],
+#                         "QTY":1
+#                         })
+#                     payment_logger.info('Data Of payment Success')
+#                     paho.mqtt.publish.single(TOPIC_M_ORDER, payload, hostname=BROKER, port=PORT, auth={'username': MQTT_USERNAME, 'password': MQTT_PASSWORD})
+#             return JsonResponse({'success': 1, 'message': 'Data Found'})
+#         except Exception as e:
+#             payment_logger.error(f'Error payment: {str(e)}')
+#             return JsonResponse({'success': 0, 'message': 'Not Found', 'result': ''})
 @api_view(['GET'])
 @csrf_exempt
 def paymentsuccess(request):
     if request.method == 'GET':
         try:
-            json_data={"success": True,"code": "PAYMENT_SUCCESS","message": "Your payment is successful.","data": {"merchantId": "INDEFTTECHNOLOGYSOLUTIONS","transactionId": "TXSCAN2403011707204009674431","providerReferenceId": "T2403011707226646428279","amount": 500,"updateTimestamp": 1709293046573,"paymentState": "COMPLETED","payResponseCode": "SUCCESS","transactionContext": {"qrCodeId": "EQR2402271212310092552891","storeId": "MS2402231810481193910571","terminalId": "ET2402271212310102552082"},"storeId": "MS2402231810481193910571","terminalId": "ET2402271212310102552082"}}
-            if json_data['code'] ==  'PAYMENT_SUCCESS':
-                print(json_data['data'])
-                storeName= QrCode.objects.filter(qr_code_id = json_data['data']['storeId'])
-                print('hello')
-                print(storeName)
-                if len(storeName) != 0: 
+            json_data = {
+                "success": True,
+                "code": "PAYMENT_SUCCESS",
+                "message": "Your payment is successful.",
+                "data": {
+                    "merchantId": "INDEFTTECHNOLOGYSOLUTIONS",
+                    "transactionId": "TXSCAN2403011707204009674431",
+                    "providerReferenceId": "T2403011707226646428279",
+                    "amount": 500,
+                    "updateTimestamp": 1709293046573,
+                    "paymentState": "COMPLETED",
+                    "payResponseCode": "SUCCESS",
+                    "transactionContext": {
+                        "qrCodeId": "EQR2402271212310092552891",
+                        "storeId": "MS2402231810481193910571",
+                        "terminalId": "ET2402271212310102552082"
+                    },
+                    "storeId": "MS2402231810481193910571",
+                    "terminalId": "ET2402271212310102552082"
+                }
+            }
+
+            if json_data['code'] == 'PAYMENT_SUCCESS':
+                payment_logger.info(f"Payment success data: {json_data['data']}")
+
+                store_name_record = QrCode.objects.filter(qr_code_id=json_data['data']['storeId'])
+                payment_logger.info('Store record query executed')
+
+                if store_name_record.exists():
+                    store_name = store_name_record.first().qr_store_name
+                    payment_logger.info(f'Store Name: {store_name}')
+
                     payload = json.dumps({
-                        "MACHINE_ID": storeName[0].qr_store_name,
+                        "MACHINE_ID": store_name,
                         "AID": json_data['data']['merchantId'],
                         "TID": json_data['data']['transactionId'],
                         "RID": json_data['data']['terminalId'],
-                        "QTY":1
-                        })
-                    paho.mqtt.publish.single(TOPIC_M_ORDER, payload, hostname=BROKER, port=PORT, auth={'username': MQTT_USERNAME, 'password': MQTT_PASSWORD})
-            return JsonResponse({'success': 1, 'message': 'Data Found'})
-        except Exception as e:
-            logging.error(f'Error payment: {str(e)}')
-            return JsonResponse({'success': 0, 'message': 'Not Found', 'result': ''})
+                        "QTY": 1
+                    })
+                    payment_logger.info(f'MQTT Payload: {payload}')
 
+                    try:
+                        paho.mqtt.publish.single(TOPIC_M_ORDER, payload, hostname=BROKER, port=PORT, auth={'username': MQTT_USERNAME, 'password': MQTT_PASSWORD})
+                        payment_logger.info('MQTT message published successfully')
+                    except Exception as mqtt_publish_error:
+                        payment_logger.error(f'Error publishing to MQTT: {mqtt_publish_error}', exc_info=True)
+                        return JsonResponse({'success': 0, 'message': 'Error publishing to MQTT', 'result': str(mqtt_publish_error)})
+                else:
+                    payment_logger.warning(f'Store ID {json_data["data"]["storeId"]} not found in the database')
+                    return JsonResponse({'success': 0, 'message': 'Store ID not found', 'result': 'Store ID not found in the database'})
+            else:
+                payment_logger.warning(f'Payment failed with code: {json_data["code"]}')
+                return JsonResponse({'success': 0, 'message': 'Payment failed', 'result': json_data})
+
+            return JsonResponse({'success': 1, 'message': 'Data Found'})
+        
+        except Exception as e:
+            payment_logger.error(f'Error processing payment: {str(e)}', exc_info=True)
+            return JsonResponse({'success': 0, 'message': 'An error occurred', 'result': str(e)})
 
 from django.db.models import Count
 from django.db import connection

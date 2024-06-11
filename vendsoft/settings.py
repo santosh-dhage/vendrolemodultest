@@ -138,7 +138,7 @@ AUTH_USER_MODEL = 'userapp.User'
 DATABASES = {
     'default': {
         'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': 'vendsoft1',
+        'NAME': 'vendsoft2',
         'USER':'postgres',
         'PASSWORD':'1234',
         'HOST':'localhost',
@@ -226,13 +226,42 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'userapp.verify.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+
         
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
+    # 'DEFAULT_PERMISSION_CLASSES': (
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ),
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file_payment': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'log/payment_logs.log',  # Path to your payment log file
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'payment_logger': {
+            'handlers': ['file_payment'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
 }
 
 from datetime import timedelta

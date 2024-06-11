@@ -3044,21 +3044,49 @@ class ColorStoreViewSet(viewsets.ModelViewSet):
         try:
             # Get the color name from the request data
             color_name = request.data.get('color_name')
-            
-            # Check if a color with the same name already exists
-            existing_color = ColorStore.objects.filter(color_name=color_name).first()
-            if existing_color:
-                # Delete the existing color
-                existing_color.delete()
+            # Assuming you also want to store the color code
+            tenant_id = request.tenant.id  # Assuming you have a user object with a tenant ID
 
-            serializer = ColorStoreSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            # Check if any colors exist for the current tenant
+            existing_colors = ColorStore.objects.filter(tenant=tenant_id)
+            if existing_colors.exists():
+                # Delete all existing colors
+                existing_colors.delete()
 
-            return Response({'success': 1, 'message': 'Data Created', 'result': serializer.data})
+            # Convert tenant_id to a Tenant instance
+            tenant = Tenant.objects.get(pk=tenant_id)
+
+            # Create a new color
+            new_color = ColorStore(color_name=color_name, tenant=tenant)
+            new_color.save()
+
+            return Response({'success': 1, 'message': 'Data Created'}, status=status.HTTP_201_CREATED)
         except ValidationError as ve:
-            return Response({'success': 0, 'message': 'Not Created', 'result': ve.detail})
+            return Response({'success': 0, 'message': 'Not Created', 'result': ve.detail}, status=status.HTTP_400_BAD_REQUEST)
+    # def create(self, request, *args, **kwargs):
+    #     try:
+    #         # Get the color name from the request data
+    #         color_name = request.data.get('color_name')
+    #         # Assuming you also want to store the color code
+    #         tenant_id = request.tenant.id  # Assuming you have a user object with a tenant ID
 
+    #         # Check if a color with the same name exists for the current tenant
+    #         # Check if any colors exist for the current tenant
+    #         # Check if any colors exist
+    #         if ColorStore.objects.exists():
+    #             # Delete all existing colors
+    #             ColorStore.objects.all().delete()
+
+    #         # Convert tenant_id to a Tenant instance
+    #         tenant = Tenant.objects.get(pk=tenant_id)
+
+    #         # Create a new color
+    #         new_color = ColorStore(color_name=color_name)
+    #         new_color.save()
+
+    #         return Response({'success': 1, 'message': 'Data Created'}, status=status.HTTP_201_CREATED)
+    #     except ValidationError as ve:
+    #         return Response({'success': 0, 'message': 'Not Created', 'result': ve.detail}, status=status.HTTP_400_BAD_REQUEST)
     def update(self, request, pk, *args, **kwargs):
         try:
             chp = ColorStore.objects.get(pk=pk)
@@ -6921,58 +6949,58 @@ from .serializers import RoleSerializer, ModuleSerializer, SubModuleSerializer, 
 #                 sub_module, created = SubModule.objects.get_or_create(name=sub_module_name, module=module)
 #                 RoleSubModuleAssignment.objects.get_or_create(role=role, sub_module=sub_module)
 
-# class RoleViewSet(viewsets.ModelViewSet):
-#     queryset = Role.objects.all()
-#     serializer_class = RoleSerializer
+class RoleViewSet(viewsets.ModelViewSet):
+    queryset = Role.objects.all()
+    serializer_class = RoleSerializer
 
-#     def list(self, request, *args, **kwargs):
-#         try:
-#             queryset = Role.objects.all().order_by('-id')
-#             serializer = RoleSerializer(queryset, many=True)
-#             return Response({'success': 1, 'message': 'Manage Membership List', 'result': serializer.data})
-#         except Exception as e:
-#             return Response({'success': 0, 'message': 'Not Found', 'result': str(e)})
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = Role.objects.all().order_by('-id')
+            serializer = RoleSerializer(queryset, many=True)
+            return Response({'success': 1, 'message': 'Manage Membership List', 'result': serializer.data})
+        except Exception as e:
+            return Response({'success': 0, 'message': 'Not Found', 'result': str(e)})
 
-#     def retrieve(self, request, pk, *args, **kwargs):
-#         try:
-#             chp = Role.objects.get(pk=pk)
-#             serializer = RoleSerializer(chp)
-#             return Response({'success': 1, 'message': 'Manage Membership', 'result': serializer.data})
-#         except Role.DoesNotExist:
-#             return Response({'success': 0, 'message': 'Not Found'})
+    def retrieve(self, request, pk, *args, **kwargs):
+        try:
+            chp = Role.objects.get(pk=pk)
+            serializer = RoleSerializer(chp)
+            return Response({'success': 1, 'message': 'Manage Membership', 'result': serializer.data})
+        except Role.DoesNotExist:
+            return Response({'success': 0, 'message': 'Not Found'})
 
-#     def create(self, request, *args, **kwargs):
-#         try:
-#             serializer = RoleSerializer(data=request.data)
-#             serializer.is_valid(raise_exception=True)
-#             serializer.save()
+    def create(self, request, *args, **kwargs):
+        try:
+            serializer = RoleSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             
-#             return Response({'success': 1, 'message': 'Data Created', 'result': serializer.data})
-#         except ValidationError as ve:
-#             return Response({'success': 0, 'message': 'Not Created', 'result': ve.detail})
+            return Response({'success': 1, 'message': 'Data Created', 'result': serializer.data})
+        except ValidationError as ve:
+            return Response({'success': 0, 'message': 'Not Created', 'result': ve.detail})
 
-#     def update(self, request, pk, *args, **kwargs):
-#         try:
-#             chp = Role.objects.get(pk=pk)
-#             if 'rqcode' not in request.data:
-#                 return Response({'success': 0, 'message': 'rqcode is required'}, status=status.HTTP_400_BAD_REQUEST)
-#             serializer = RoleSerializer(chp, data=request.data)
-#             serializer.is_valid(raise_exception=True)
-#             serializer.save()
-#             return Response({'success': 1, 'message': 'Data Updated', 'result': serializer.data})
-#         except Role.DoesNotExist:
-#             return Response({'success': 0, 'message': 'Not Found'})
+    def update(self, request, pk, *args, **kwargs):
+        try:
+            chp = Role.objects.get(pk=pk)
+            if 'rqcode' not in request.data:
+                return Response({'success': 0, 'message': 'rqcode is required'}, status=status.HTTP_400_BAD_REQUEST)
+            serializer = RoleSerializer(chp, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({'success': 1, 'message': 'Data Updated', 'result': serializer.data})
+        except Role.DoesNotExist:
+            return Response({'success': 0, 'message': 'Not Found'})
 
-#     def destroy(self, request, pk, *args, **kwargs):
-#         try:
-#             machine = Role.objects.get(pk=pk)
+    def destroy(self, request, pk, *args, **kwargs):
+        try:
+            machine = Role.objects.get(pk=pk)
 
-#             machine.delete()
-#             # chp = Role.objects.get(pk=pk)
-#             # chp.delete()
-#             return Response({'success': 1, 'message': 'Data Deleted'})
-#         except Role.DoesNotExist:
-#             return Response({'success': 0, 'message': 'Not Found'})
+            machine.delete()
+            # chp = Role.objects.get(pk=pk)
+            # chp.delete()
+            return Response({'success': 1, 'message': 'Data Deleted'})
+        except Role.DoesNotExist:
+            return Response({'success': 0, 'message': 'Not Found'})
 
 
 
@@ -7022,6 +7050,7 @@ class CreateRoleWithModulesOrSubModulesAPIView(APIView):
         role.save()
         serializer = RoleSerializer(role)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
 # class CreateRoleWithModulesOrSubModulesAPIView(APIView):
 #     permission_classes = [IsAuthenticated]
 
@@ -7064,6 +7093,7 @@ class CreateRoleWithModulesOrSubModulesAPIView(APIView):
 #         role.save()
 #         serializer = RoleSerializer(role)
 #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 class AddModulesOrSubModulesToRoleAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -7108,6 +7138,7 @@ class AddModulesOrSubModulesToRoleAPIView(APIView):
         role.save()
         serializer = RoleSerializer(role)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
 class UpdateRolePermissionsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -7196,7 +7227,7 @@ class AssignRoleToUserAPIView(APIView):
         permissions = CustomPermission.objects.filter(submodules__modules__roles=role).distinct()
 
         print(permissions,'permissssionnnnss')
-        if not permissions.exists():
+        if permissions.exists():
             return Response({'error': 'No permissions found for the specified role'}, status=status.HTTP_404_NOT_FOUND)
 
         # # Assign fetched permissions to the user
@@ -7224,7 +7255,7 @@ class UserRolesModulesAndSubModulesAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        roles = user.roles.all()
+        roles = user.rolesname.all()
         roles_data = []
 
         for role in roles:
@@ -7259,3 +7290,62 @@ class UserRolesModulesAndSubModulesAPIView(APIView):
         }
 
         return Response({'success':1,'result':response_data})
+    
+# santosh
+class RoleWithModulesOrSubModulesAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_profile = request.user
+        if user_profile.role != '2':  # Adjust as per your role checking logic
+            return Response({'error': 'You do not have permission to assign permissions.'}, status=status.HTTP_403_FORBIDDEN)
+
+        data = request.data
+        role_name = data.get('role_name')
+        modules = data.get('modules')
+
+        if not role_name:
+            return Response({'error': 'Role name is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        role, created = Role.objects.get_or_create(name=role_name)
+
+        for module_data in modules:
+            module_name = module_data.get('name')
+            module, created = Module.objects.get_or_create(name=module_name)
+            role.modules.add(module)
+
+            for submodule_data in module_data.get('submodules', []):
+                submodule_name = submodule_data.get('name')
+                submodule, created = SubModule.objects.get_or_create(name=submodule_name)
+                module.submodules.add(submodule)
+
+                for permission_data in submodule_data.get('permissions', []):
+                    permission_name = permission_data.get('name')
+                    permission_codename = permission_data.get('codename')
+                    permission, created = CustomPermission.objects.get_or_create(
+                        name=permission_name, codename=permission_codename)
+                    submodule.permissions.add(permission)
+
+        role.save()
+        return Response({'message': 'Role and modules created successfully', 'success': 1}, status=status.HTTP_200_OK)
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_users_without_roles(request):
+    # Get the logged-in user
+    logged_in_user = request.user
+    
+    # Initialize an empty list for users without roles
+    users_without_roles = []
+
+    # Iterate through all users and check if they have any roles
+    for user in User.objects.all():
+        if user != logged_in_user and user.rolesname.count() == 0:
+            data={'email': user.email}
+            users_without_roles.append(data)
+    
+    return Response({'success':1,'message':'Data Found','result': users_without_roles}, status=status.HTTP_200_OK)

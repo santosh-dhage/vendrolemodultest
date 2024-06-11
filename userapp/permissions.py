@@ -16,7 +16,7 @@ class userWriteOnly(permissions.BasePermission):
 from rest_framework.exceptions import PermissionDenied
 
 class CustomPermissionRequired(permissions.BasePermission):
-    # message = "You have only view permission and you do not have permission to perform this action."
+    message = "You have only view permission and you do not have permission to perform this action."
     def has_permission(self, request, view):
         if request.user.is_authenticated:
             # Allow all requests if the user's role is 2

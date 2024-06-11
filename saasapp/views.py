@@ -535,31 +535,57 @@ class ComplaintViewSet(ModelViewSet):
         # except Exception as e:
         #     logging.error(f'Error deleting Complaint: {str(e)}')
         #     return Response({'success': 0, 'message': 'Not Found'}, status=status.HTTP_400_BAD_REQUEST)
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 @api_view(['POST', 'GET'])
 def is_valid_domain(request):
     try:
         if request.method == 'POST':
             site = request.data.get('site')
+            print(site,'sitt')
             if site:
                 domain_obj = Tenant.objects.filter(schema_name=site).exists()
+                print(domain_obj,'domain obj')
                 if domain_obj:
                     return Response({'success': 1, 'message': 'Valid Domain', 'result': domain_obj})
                 else:
                     return Response({'success': 0, 'message': 'Invalid Domain'})
             else:
                 return Response({'success': 0, 'message': 'Domain not provided'})
-        
+
         elif request.method == 'GET':
-            # Retrieving all schema names
+            # Allow unauthenticated access for GET method
             all_schemas = Tenant.objects.values_list('schema_name', flat=True)
             return Response({'success': 1, 'message': 'All Schema Names', 'result': list(all_schemas)})
-        
+
         else:
             return Response({'success': 0, 'message': 'Invalid request method'})
-    
+
     except Exception as e:
+        logger.error(f'Error: {str(e)}')
         return Response({'success': 0, 'message': str(e)})
+    #     if request.method == 'POST':
+    #         site = request.data.get('site')
+    #         if site:
+    #             domain_obj = Tenant.objects.filter(schema_name=site).exists()
+    #             if domain_obj:
+    #                 return Response({'success': 1, 'message': 'Valid Domain', 'result': domain_obj})
+    #             else:
+    #                 return Response({'success': 0, 'message': 'Invalid Domain'})
+    #         else:
+    #             return Response({'success': 0, 'message': 'Domain not provided'})
+        
+    #     elif request.method == 'GET':
+    #         # Retrieving all schema names
+    #         all_schemas = Tenant.objects.values_list('schema_name', flat=True)
+    #         return Response({'success': 1, 'message': 'All Schema Names', 'result': list(all_schemas)})
+        
+    #     else:
+    #         return Response({'success': 0, 'message': 'Invalid request method'})
+    
+    # except Exception as e:
+    #     logger.error({f'Error'})
+    #     return Response({'success': 0, 'message': str(e)})
 
     
 class ClientFeedbackViewSet(ModelViewSet):

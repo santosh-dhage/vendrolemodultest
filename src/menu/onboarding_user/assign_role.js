@@ -49,7 +49,7 @@ const Projects = () => {
 
     let getcreate_project = async () => {
         let response = await api.get('/machine/roles/')
-        let response1 = await api.get('/api/users/')
+        let response1 = await api.get('machine/get_users_without_roles/')
 
         if (response1.data.success === 1 && response.data.success===1) {
             setNotes(response.data.result)

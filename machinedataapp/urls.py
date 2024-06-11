@@ -2,8 +2,8 @@ from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 from .views import *
 from machinedataapp import views
-from userapp.routers import CustomRouter
-router = CustomRouter()
+# from userapp.routers import CustomRouter
+router = DefaultRouter()
 router.register(r'qrcode', QrCodeViewSet, basename='qrcode')
 router.register(r'machine-masters', MachineMasterViewSet, basename='machine-master')
 router.register(r'machine-user-mapping', MachineUserMappingViewSet, basename='machine-user-mapping')
@@ -11,8 +11,7 @@ router.register(r'product', ProductViewSet, basename='product')
 router.register(r'modelcapacity', ModelCapacityViewSet, basename='modelcapacity')
 router.register(r'colorstore', ColorStoreViewSet, basename='colorstore')
 router.register(r'bulkuploadmachinemaster', BulkUploadMachineMasterViewSet, basename='bulkuploadmachinemaster')
-# router.register(r'ticket', TicketViewSet, basename='ticket')
-# router.register(r'roles', RoleViewSet)
+router.register(r'roles', RoleViewSet)
 # router.register(r'modules', ModuleViewSet)
 # router.register(r'sub-modules', SubModuleViewSet)
 # router.register(r'role-modules', RoleModuleAssignmentViewSet)
@@ -165,6 +164,9 @@ urlpatterns = [
     path('assignpermissions/',  AssignRoleToUserAPIView.as_view()),
     path('users/module/',  UserRolesModulesAndSubModulesAPIView.as_view()),
 
+    # santosh
+    path('rolewithmodulesorsubmodules/',  RoleWithModulesOrSubModulesAPIView.as_view()),
+    path('get_users_without_roles/',  views.get_users_without_roles),
 
 ]
 

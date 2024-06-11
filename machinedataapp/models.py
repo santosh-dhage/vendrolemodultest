@@ -89,6 +89,7 @@ class SiteSettings(models.Model):
 
 
 class ColorStore(models.Model):
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='colors', null=True, blank=True)
     color_name = models.CharField(max_length=100, null=True, blank=True)
     color_code = models.CharField(max_length=100, null=True, blank=True)
 

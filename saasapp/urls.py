@@ -3,6 +3,7 @@ from django.urls import path,include
 from saasapp import views
 from rest_framework.routers import DefaultRouter
 from .views import ContactUsViewSet
+
 router = DefaultRouter()
 
 router.register('contactus',views.ContactUsViewSet,basename='contactus')
