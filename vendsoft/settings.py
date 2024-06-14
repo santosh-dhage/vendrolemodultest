@@ -52,6 +52,7 @@ SHARED_APPS = [
     # 'basic',
     'saasapp',
     #'rest-framework',
+    'django.contrib.sitemaps',
 ]
 """
     These app's data are stored on their specific schemas
@@ -100,6 +101,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'userapp.middleware.RemoveApiKeyHeaderMiddleware',
 ]
 
 ROOT_URLCONF = 'vendsoft.urls'

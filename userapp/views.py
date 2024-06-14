@@ -44,6 +44,7 @@ MQTT_USERNAME = 'lldnoeHIULHU87678'
 MQTT_PASSWORD = 'oSBVFIELH8734109283Vkjvbk'
 
 # MQTT topic to which you want to send the response
+TOPIC_M_STATUS = 'EMBI/M_Status'
 TOPIC_M_ORDER = 'EMBI/M_Order'
 # Logging configuration
 LOG_FILE = 'log/app.log'
@@ -936,79 +937,198 @@ from paho.mqtt import client as mqtt
 #         except Exception as e:
 #             logging.error(f'Error payment: {str(e)}')
 #             return JsonResponse({'success': 0, 'message': 'Not Found', 'result': ''})
-payment_logger = logging.getLogger('payment_logger')
 
-@api_view(['POST'])
-@csrf_exempt
-def paymentcallback(request):
-    if request.method == 'POST':
-        try:
-            encoded_string = request.data.get('response')
-            payment_logger.info(f'Payment Data (encoded): {encoded_string}')
+# # Create a directory to store log files if it doesn't exist
+# import os
+
+# # Create a directory to store log files if it doesn't exist
+# LOGS_DIR = 'log/domain_logs'
+# os.makedirs(LOGS_DIR, exist_ok=True)
+
+# def get_domain_logger(domain):
+#     # Create a logger for the domain
+#     domain_logger = logging.getLogger(domain)
+#     domain_logger.setLevel(logging.INFO)
+
+#     # Create a file handler for the logger
+#     log_file = os.path.join(LOGS_DIR, f"{domain}.log")
+#     file_handler = logging.FileHandler(log_file)
+#     file_handler.setLevel(logging.INFO)
+
+#     # Create a formatter and set it for the file handler
+#     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+#     file_handler.setFormatter(formatter)
+
+#     # Add the file handler to the logger
+#     domain_logger.addHandler(file_handler)
+
+#     return domain_logger
+
+# def on_connect(client, userdata, flags, rc):
+#     logging.info("Connected to MQTT broker with result code " + str(rc))
+#     client.subscribe(TOPIC_M_STATUS)
+
+# def on_message(client, userdata, msg):
+#     payload = msg.payload.decode()
+#     topic = msg.topic
+#     try:
+#         data = json.loads(payload)
+#         machine_id = data['M_Id']
+#         stock = data['Stock']
+#         domain = data.get('merchantId')
+#         domain_logger = get_domain_logger(domain)
+#         domain_logger.info(f"Received status update: {machine_id} is {stock}")
+#     except Exception as e:
+#         logging.error(f"Error processing message from {topic}: {str(e)}", exc_info=True)
+
+# mqtt_client = mqtt.Client()
+# mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+# mqtt_client.on_connect = on_connect
+# mqtt_client.on_message = on_message
+# mqtt_client.connect(BROKER, PORT)
+# mqtt_client.loop_start()
+
+# @api_view(['POST'])
+# @csrf_exempt
+# def paymentcallback(request):
+#     if request.method == 'POST':
+#         try:
+#             encoded_string = request.data.get('response')
+#             domain_logger.info(f'Payment Data (encoded): {encoded_string}')
             
-            if not encoded_string:
-                payment_logger.error('Encoded string is missing or empty')
-                return JsonResponse({'success': 0, 'message': 'Missing encoded string in request data'})
+#             if not encoded_string:
+#                 domain_logger.error('Encoded string is missing or empty')
+#                 return JsonResponse({'success': 0, 'message': 'Missing encoded string in request data'})
 
-            try:
-                padded_encoded_string = encoded_string + '=' * (4 - len(encoded_string) % 4)
-                jwt_token = base64.urlsafe_b64decode(padded_encoded_string)
-                payment_logger.info(f'Payment Data (decoded JWT): {jwt_token}')
-            except Exception as decode_error:
-                payment_logger.error(f'Error decoding JWT token: {decode_error}', exc_info=True)
-                return JsonResponse({'success': 0, 'message': 'Error decoding JWT token', 'result': str(decode_error)})
+#             try:
+#                 padded_encoded_string = encoded_string + '=' * (4 - len(encoded_string) % 4)
+#                 jwt_token = base64.urlsafe_b64decode(padded_encoded_string)
+#                 domain_logger.info(f'Payment Data (decoded JWT): {jwt_token}')
+#             except Exception as decode_error:
+#                 domain_logger.error(f'Error decoding JWT token: {decode_error}', exc_info=True)
+#                 return JsonResponse({'success': 0, 'message': 'Error decoding JWT token', 'result': str(decode_error)})
 
-            try:
-                json_string = jwt_token.decode('utf-8')
-                json_data = json.loads(json_string)
-                payment_logger.info(f'Payment Data (JSON): {json_data}')
-            except Exception as json_decode_error:
-                payment_logger.error(f'Error decoding JSON data: {json_decode_error}', exc_info=True)
-                return JsonResponse({'success': 0, 'message': 'Error decoding JSON data', 'result': str(json_decode_error)})
+#             try:
+#                 json_string = jwt_token.decode('utf-8')
+#                 json_data = json.loads(json_string)
+#                 domain_logger.info(f'Payment Data (JSON): {json_data}')
+#             except Exception as json_decode_error:
+#                 domain_logger.error(f'Error decoding JSON data: {json_decode_error}', exc_info=True)
+#                 return JsonResponse({'success': 0, 'message': 'Error decoding JSON data', 'result': str(json_decode_error)})
 
-            required_fields = ['code', 'data']
-            if not all(field in json_data for field in required_fields):
-                payment_logger.error(f'Missing required fields in JSON data: {json_data}')
-                return JsonResponse({'success': 0, 'message': 'Missing required fields in JSON data'})
+#             required_fields = ['code', 'data']
+#             if not all(field in json_data for field in required_fields):
+#                 domain_logger.error(f'Missing required fields in JSON data: {json_data}')
+#                 return JsonResponse({'success': 0, 'message': 'Missing required fields in JSON data'})
 
-            if json_data.get('code') == 'PAYMENT_SUCCESS':
-                data_fields = ['storeId', 'merchantId', 'transactionId', 'terminalId']
-                if not all(field in json_data['data'] for field in data_fields):
-                    payment_logger.error(f'Missing required data fields in JSON data: {json_data["data"]}')
-                    return JsonResponse({'success': 0, 'message': 'Missing required data fields in JSON data'})
+#             if json_data.get('code') == 'PAYMENT_SUCCESS':
+#                 domain = get_domain(request)
+#                 domain_logger = get_domain_logger(domain)
+#                 domain_logger.info(f"Payment success data: {json_data['data']}")
+#                 data_fields = ['storeId', 'merchantId', 'transactionId', 'terminalId']
+#                 if not all(field in json_data['data'] for field in data_fields):
+#                     domain_logger.error(f'Missing required data fields in JSON data: {json_data["data"]}')
+#                     return JsonResponse({'success': 0, 'message': 'Missing required data fields in JSON data'})
 
-                store_name_record = QrCode.objects.filter(qr_store_name=json_data['data'].get('storeId'))
-                if store_name_record.exists():
-                    store_name = store_name_record.first().qr_store_name
-                    payment_logger.info(f'Store Name: {store_name}')
+#                 store_name_record = QrCode.objects.filter(qr_store_name=json_data['data'].get('storeId'))
+#                 domain_logger.info('Store record query executed')
+#                 if store_name_record.exists():
+#                     store_name = store_name_record.first().qr_store_name
+#                     domain_logger.info(f'Store Name: {store_name}')
+
+#                     # Check machine status directly from payload data
+#                     machine_id = json_data['data'].get('M_Id')
+#                     print(machine_id,'machineiii')
+#                     machine_status_record = MStatus.objects.filter(m_id=machine_id).first()
                     
-                    payload = json.dumps({
-                        "MACHINE_ID": store_name,
-                        "AID": json_data['data'].get('merchantId'),
-                        "TID": json_data['data'].get('transactionId'),
-                        "RID": json_data['data'].get('terminalId'),
-                        "QTY": 1
-                    })
-                    payment_logger.info(f'MQTT Payload: {payload}')
-                    
-                    try:
-                        paho.mqtt.publish.single(TOPIC_M_ORDER, payload, hostname=BROKER, port=PORT, auth={'username': MQTT_USERNAME, 'password': MQTT_PASSWORD})
-                        payment_logger.info('Payment success and MQTT message published successfully')
-                    except Exception as mqtt_publish_error:
-                        payment_logger.error(f'Error publishing to MQTT: {mqtt_publish_error}', exc_info=True)
-                        return JsonResponse({'success': 0, 'message': 'Error publishing to MQTT', 'result': str(mqtt_publish_error)})
-                else:
-                    payment_logger.warning(f'Store ID {json_data["data"].get("storeId")} not found in the database')
-                    return JsonResponse({'success': 0, 'message': 'Store ID not found', 'result': 'Store ID not found in the database'})
-            else:
-                payment_logger.warning(f'Payment failed with code: {json_data.get("code")}')
-                return JsonResponse({'success': 0, 'message': 'Payment failed', 'result': json_data})
+#                     if not machine_status_record:
+#                         domain_logger.warning(f'Machine status record for {machine_id} not found')
+#                         return JsonResponse({'success': 0, 'message': 'Machine status not found', 'result': 'Machine status record not found in the database'})
 
-            return JsonResponse({'success': 1, 'message': 'Data Found', 'result': json_data})
+#                     updated_time = machine_status_record.created_at
+#                     if updated_time is None:
+#                         domain_logger.warning(f'Machine ID {machine_id} has no updated_at timestamp')
+#                         return JsonResponse({'success': 0, 'message': 'Machine offline', 'result': 'Machine has no updated timestamp'})
+
+#                     # Make both datetimes naive by removing timezone information
+#                     updated_time = updated_time.replace(tzinfo=None)
+#                     current_time = datetime.now()
+#                     time_difference = current_time - updated_time
+#                     if time_difference > timedelta(minutes=2):
+#                         domain_logger.warning(f'Machine ID {machine_id} has not been updated in the last 2 minutes')
+#                         return JsonResponse({'success': 0, 'message': 'Machine offline', 'result': 'Machine has not been updated in the last 2 minutes'})
+
+#                     if machine_status_record.stock <= 0:
+#                         domain_logger.warning(f'Stock unavailable for Machine ID: {machine_id}')
+#                         return JsonResponse({'success': 0, 'message': 'Stock unavailable', 'result': 'Stock unavailable for the given machine'})
+
+#                     payload = json.dumps({
+#                         "MACHINE_ID": store_name,
+#                         "AID": json_data['data']['merchantId'],
+#                         "TID": json_data['data']['transactionId'],
+#                         "RID": json_data['data']['terminalId'],
+#                         "QTY": 1
+#                     })
+#                     domain_logger.info(f'MQTT Payload: {payload}')
+
+#                     # Retry logic
+#                     max_retries = 1
+#                     for attempt in range(max_retries + 1):
+#                         try:
+#                             paho.mqtt.publish.single(TOPIC_M_ORDER, payload, hostname=BROKER, port=PORT, auth={'username': MQTT_USERNAME, 'password': MQTT_PASSWORD})
+#                             domain_logger.info('MQTT message published successfully')
+#                             break
+#                         except Exception as mqtt_publish_error:
+#                             domain_logger.error(f'Error publishing to MQTT (attempt {attempt + 1}): {mqtt_publish_error}', exc_info=True)
+#                             if attempt < max_retries:
+#                                 time.sleep(10)  # Wait for 10 seconds before retrying
+#                             else:
+#                                 domain_logger.error(f'Final attempt failed. Payment response: {json_data}')
+#                                 return JsonResponse({'success': 0, 'message': 'Error publishing to MQTT', 'result': str(mqtt_publish_error)})
+#                 else:
+#                     domain_logger.warning(f'Store ID {json_data["data"]["storeId"]} not found in the database')
+#                     return JsonResponse({'success': 0, 'message': 'Store ID not found', 'result': 'Store ID not found in the database'})
+#             elif json_data['code'] == 'PAYMENT_ERROR':
+#                 domain_logger.warning(f'Payment failed with code: {json_data["code"]}')
+#                 return JsonResponse({'success': 0, 'message': 'PAYMENT_ERROR', 'result': json_data})
+#             else:
+#                 domain_logger.warning(f'Payment failed with unknown code: {json_data["code"]}')
+#                 return JsonResponse({'success': 0, 'message': 'Unknown payment code', 'result': json_data})
+
+
+#             return JsonResponse({'success': 1, 'message': 'Data Found'})
+
+#         except Exception as e:
+#             domain_logger.error(f'Error processing payment: {str(e)}', exc_info=True)
+#             return JsonResponse({'success': 0, 'message': 'An error occurred', 'result': str(e)})
+                    
+        #             payload = json.dumps({
+        #                 "MACHINE_ID": store_name,
+        #                 "AID": json_data['data'].get('merchantId'),
+        #                 "TID": json_data['data'].get('transactionId'),
+        #                 "RID": json_data['data'].get('terminalId'),
+        #                 "QTY": 1
+        #             })
+        #             domain_logger.info(f'MQTT Payload: {payload}')
+                    
+        #             try:
+        #                 paho.mqtt.publish.single(TOPIC_M_ORDER, payload, hostname=BROKER, port=PORT, auth={'username': MQTT_USERNAME, 'password': MQTT_PASSWORD})
+        #                 domain_logger.info('Payment success and MQTT message published successfully')
+        #             except Exception as mqtt_publish_error:
+        #                 domain_logger.error(f'Error publishing to MQTT: {mqtt_publish_error}', exc_info=True)
+        #                 return JsonResponse({'success': 0, 'message': 'Error publishing to MQTT', 'result': str(mqtt_publish_error)})
+        #         else:
+        #             domain_logger.warning(f'Store ID {json_data["data"].get("storeId")} not found in the database')
+        #             return JsonResponse({'success': 0, 'message': 'Store ID not found', 'result': 'Store ID not found in the database'})
+        #     else:
+        #         domain_logger.warning(f'Payment failed with code: {json_data.get("code")}')
+        #         return JsonResponse({'success': 0, 'message': 'Payment failed', 'result': json_data})
+
+        #     return JsonResponse({'success': 1, 'message': 'Data Found', 'result': json_data})
         
-        except Exception as e:
-            payment_logger.error(f'Error processing payment: {e}', exc_info=True)
-            return JsonResponse({'success': 0, 'message': 'An error occurred', 'result': str(e)})
+        # except Exception as e:
+        #     domain_logger.error(f'Error processing payment: {e}', exc_info=True)
+        #     return JsonResponse({'success': 0, 'message': 'An error occurred', 'result': str(e)})
         
 # @api_view(['GET'])
 # @csrf_exempt
@@ -1036,42 +1156,238 @@ def paymentcallback(request):
 #         except Exception as e:
 #             payment_logger.error(f'Error payment: {str(e)}')
 #             return JsonResponse({'success': 0, 'message': 'Not Found', 'result': ''})
-@api_view(['GET'])
+
+
+
+# @api_view(['GET'])
+# @csrf_exempt
+# def paymentsuccess(request):
+#     if request.method == 'GET':
+#         try:
+#             json_data = {
+#                 "success": True,
+#                 "code": "PAYMENT_SUCCESS",
+#                 "message": "Your payment is successful.",
+#                 "data": {
+#                     "merchantId": "INDEFTSTATICQRUAT",
+#                     "transactionId": "TXSCAN2403011707204009674431",
+#                     "providerReferenceId": "T2403011707226646428279",
+#                     "amount": 500,
+#                     "updateTimestamp": 1709293046573,
+#                     "paymentState": "COMPLETED",
+#                     "payResponseCode": "SUCCESS",
+#                     "transactionContext": {
+#                         "qrCodeId": "QR2402191241504532352779",
+#                         "storeId": "EMBI_DEMO_CQR_0001",
+#                         "terminalId": "testterminal1"
+#                     },
+#                     "storeId": "EMBI_DEMO_CQR_0001",
+#                     "terminalId": "testterminal1",
+#                 }
+#             }
+
+#             if json_data['code'] == 'PAYMENT_SUCCESS':
+#                 domain = get_domain(request)
+#                 domain_logger = get_domain_logger(domain)
+#                 domain_logger.info(f"Payment success data: {json_data['data']}")
+
+#                 store_name_record = QrCode.objects.filter(qr_store_name=json_data['data']['storeId'])
+#                 domain_logger.info('Store record query executed')
+
+#                 if store_name_record.exists():
+#                     store_name = store_name_record.first().qr_store_name
+#                     domain_logger.info(f'Store Name: {store_name}')
+
+#                     # Check machine status directly from payload data
+#                     machine_id = json_data['data'].get('M_Id')
+#                     print(machine_id,'machineiii')
+#                     machine_status_record = MStatus.objects.filter(m_id=machine_id).first()
+                    
+#                     if not machine_status_record:
+#                         domain_logger.warning(f'Machine status record for {machine_id} not found')
+#                         return JsonResponse({'success': 0, 'message': 'Machine status not found', 'result': 'Machine status record not found in the database'})
+
+#                     updated_time = machine_status_record.created_at
+#                     if updated_time is None:
+#                         domain_logger.warning(f'Machine ID {machine_id} has no updated_at timestamp')
+#                         return JsonResponse({'success': 0, 'message': 'Machine offline', 'result': 'Machine has no updated timestamp'})
+
+#                     # Make both datetimes naive by removing timezone information
+#                     updated_time = updated_time.replace(tzinfo=None)
+#                     current_time = datetime.now()
+#                     time_difference = current_time - updated_time
+#                     if time_difference > timedelta(minutes=2):
+#                         domain_logger.warning(f'Machine ID {machine_id} has not been updated in the last 2 minutes')
+#                         return JsonResponse({'success': 0, 'message': 'Machine offline', 'result': 'Machine has not been updated in the last 2 minutes'})
+
+#                     if machine_status_record.stock <= 0:
+#                         domain_logger.warning(f'Stock unavailable for Machine ID: {machine_id}')
+#                         return JsonResponse({'success': 0, 'message': 'Stock unavailable', 'result': 'Stock unavailable for the given machine'})
+
+#                     payload = json.dumps({
+#                         "MACHINE_ID": store_name,
+#                         "AID": json_data['data']['merchantId'],
+#                         "TID": json_data['data']['transactionId'],
+#                         "RID": json_data['data']['terminalId'],
+#                         "QTY": 1
+#                     })
+#                     domain_logger.info(f'MQTT Payload: {payload}')
+
+#                     # Retry logic
+#                     max_retries = 1
+#                     for attempt in range(max_retries + 1):
+#                         try:
+#                             paho.mqtt.publish.single(TOPIC_M_ORDER, payload, hostname=BROKER, port=PORT, auth={'username': MQTT_USERNAME, 'password': MQTT_PASSWORD})
+#                             domain_logger.info('MQTT message published successfully')
+#                             break
+#                         except Exception as mqtt_publish_error:
+#                             domain_logger.error(f'Error publishing to MQTT (attempt {attempt + 1}): {mqtt_publish_error}', exc_info=True)
+#                             if attempt < max_retries:
+#                                 time.sleep(10)  # Wait for 10 seconds before retrying
+#                             else:
+#                                 domain_logger.error(f'Final attempt failed. Payment response: {json_data}')
+#                                 return JsonResponse({'success': 0, 'message': 'Error publishing to MQTT', 'result': str(mqtt_publish_error)})
+#                 else:
+#                     domain_logger.warning(f'Store ID {json_data["data"]["storeId"]} not found in the database')
+#                     return JsonResponse({'success': 0, 'message': 'Store ID not found', 'result': 'Store ID not found in the database'})
+#             elif json_data['code'] == 'PAYMENT_ERROR':
+#                 domain_logger.warning(f'Payment failed with code: {json_data["code"]}')
+#                 return JsonResponse({'success': 0, 'message': 'PAYMENT_ERROR', 'result': json_data})
+#             else:
+#                 domain_logger.warning(f'Payment failed with unknown code: {json_data["code"]}')
+#                 return JsonResponse({'success': 0, 'message': 'Unknown payment code', 'result': json_data})
+
+
+#             return JsonResponse({'success': 1, 'message': 'Data Found'})
+
+#         except Exception as e:
+#             domain_logger.error(f'Error processing payment: {str(e)}', exc_info=True)
+#             return JsonResponse({'success': 0, 'message': 'An error occurred', 'result': str(e)})
+
+# def get_domain(request):
+#     domain_name = request.get_host().split('.')[0]
+#     return domain_name
+
+import os
+import logging
+import json
+import base64
+from datetime import datetime, timedelta
+import time
+import paho.mqtt.client as mqtt
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+
+# Create a directory to store log files if it doesn't exist
+LOGS_DIR = 'log/domain_logs'
+os.makedirs(LOGS_DIR, exist_ok=True)
+
+def get_domain(request):
+    domain_name = request.get_host().split('.')[0]
+    return domain_name
+
+def get_domain_logger(domain):
+    # Create a logger for the domain
+    domain_logger = logging.getLogger(domain)
+    if not domain_logger.handlers:
+        domain_logger.setLevel(logging.INFO)
+        # Create a file handler for the logger
+        log_file = os.path.join(LOGS_DIR, f"{domain}.log")
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(logging.INFO)
+
+        # Create a formatter and set it for the file handler
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(formatter)
+
+        # Add the file handler to the logger
+        domain_logger.addHandler(file_handler)
+
+    return domain_logger
+
+def on_connect(client, userdata, flags, rc):
+    logging.info("Connected to MQTT broker with result code " + str(rc))
+    client.subscribe(TOPIC_M_STATUS)
+
+def on_message(client, userdata, msg):
+    payload = msg.payload.decode()
+    topic = msg.topic
+    try:
+        data = json.loads(payload)
+        machine_id = data['M_Id']
+        stock = data['Stock']
+        domain = userdata['domain']
+        domain_logger = get_domain_logger(domain)
+    except Exception as e:
+        logging.error(f"Error processing message from {topic}: {str(e)}", exc_info=True)
+
+mqtt_client = mqtt.Client(userdata={'domain': 'default'})
+mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+mqtt_client.on_connect = on_connect
+mqtt_client.on_message = on_message
+mqtt_client.connect(BROKER, PORT)
+mqtt_client.loop_start()
+
+@api_view(['POST'])
 @csrf_exempt
-def paymentsuccess(request):
-    if request.method == 'GET':
+def paymentcallback(request):
+    if request.method == 'POST':
+        domain = get_domain(request)
+        domain_logger = get_domain_logger(domain)
         try:
-            json_data = {
-                "success": True,
-                "code": "PAYMENT_SUCCESS",
-                "message": "Your payment is successful.",
-                "data": {
-                    "merchantId": "INDEFTTECHNOLOGYSOLUTIONS",
-                    "transactionId": "TXSCAN2403011707204009674431",
-                    "providerReferenceId": "T2403011707226646428279",
-                    "amount": 500,
-                    "updateTimestamp": 1709293046573,
-                    "paymentState": "COMPLETED",
-                    "payResponseCode": "SUCCESS",
-                    "transactionContext": {
-                        "qrCodeId": "EQR2402271212310092552891",
-                        "storeId": "MS2402231810481193910571",
-                        "terminalId": "ET2402271212310102552082"
-                    },
-                    "storeId": "MS2402231810481193910571",
-                    "terminalId": "ET2402271212310102552082"
-                }
-            }
+            encoded_string = request.data.get('response')
+            domain_logger.info(f'Payment Data (encoded): {encoded_string}')
+            
+            if not encoded_string:
+                domain_logger.error('Encoded string is missing or empty')
+                return JsonResponse({'success': 0, 'message': 'Missing encoded string in request data'})
 
-            if json_data['code'] == 'PAYMENT_SUCCESS':
-                payment_logger.info(f"Payment success data: {json_data['data']}")
+            try:
+                padded_encoded_string = encoded_string + '=' * (4 - len(encoded_string) % 4)
+                jwt_token = base64.urlsafe_b64decode(padded_encoded_string)
+                domain_logger.info(f'Payment Data (decoded JWT): {jwt_token}')
+            except Exception as decode_error:
+                domain_logger.error(f'Error decoding JWT token: {decode_error}', exc_info=True)
+                return JsonResponse({'success': 0, 'message': 'Error decoding JWT token', 'result': str(decode_error)})
 
-                store_name_record = QrCode.objects.filter(qr_code_id=json_data['data']['storeId'])
-                payment_logger.info('Store record query executed')
+            try:
+                json_string = jwt_token.decode('utf-8')
+                json_data = json.loads(json_string)
+                domain_logger.info(f'Payment Data (JSON): {json_data}')
+            except Exception as json_decode_error:
+                domain_logger.error(f'Error decoding JSON data: {json_decode_error}', exc_info=True)
+                return JsonResponse({'success': 0, 'message': 'Error decoding JSON data', 'result': str(json_decode_error)})
 
+            required_fields = ['code', 'data']
+            if not all(field in json_data for field in required_fields):
+                domain_logger.error(f'Missing required fields in JSON data: {json_data}')
+                return JsonResponse({'success': 0, 'message': 'Missing required fields in JSON data'})
+
+            if json_data.get('code') == 'PAYMENT_SUCCESS':
+                domain_logger.info(f"Payment success data: {json_data['data']}")
+                data_fields = ['storeId', 'merchantId', 'transactionId', 'terminalId']
+                if not all(field in json_data['data'] for field in data_fields):
+                    domain_logger.error(f'Missing required data fields in JSON data: {json_data["data"]}')
+                    return JsonResponse({'success': 0, 'message': 'Missing required data fields in JSON data'})
+
+                store_name_record = QrCode.objects.filter(qr_store_id=json_data['data'].get('storeId'))
+                domain_logger.info('Store record query executed')
                 if store_name_record.exists():
                     store_name = store_name_record.first().qr_store_name
-                    payment_logger.info(f'Store Name: {store_name}')
+                    domain_logger.info(f'Store Name: {store_name}')
+
+                    machine_id = json_data['data'].get('storeId')
+                    domain_logger.info(f'Machine ID: {machine_id}')
+                    machine_status_record = MStatus.objects.filter(m_id=machine_id).first()
+                    
+                    if not machine_status_record:
+                        domain_logger.warning(f'Machine status record for {machine_id} not found')
+                        return JsonResponse({'success': 0, 'message': 'Machine status not found', 'result': 'Machine status record not found in the database'})
+
+                    if machine_status_record.stock <= 0:
+                        domain_logger.warning(f'Stock unavailable for Machine ID: {machine_id}')
+                        return JsonResponse({'success': 0, 'message': 'Stock unavailable', 'result': 'Stock unavailable for the given machine'})
 
                     payload = json.dumps({
                         "MACHINE_ID": store_name,
@@ -1080,26 +1396,116 @@ def paymentsuccess(request):
                         "RID": json_data['data']['terminalId'],
                         "QTY": 1
                     })
-                    payment_logger.info(f'MQTT Payload: {payload}')
+                    domain_logger.info(f'MQTT Payload: {payload}')
 
                     try:
                         paho.mqtt.publish.single(TOPIC_M_ORDER, payload, hostname=BROKER, port=PORT, auth={'username': MQTT_USERNAME, 'password': MQTT_PASSWORD})
-                        payment_logger.info('MQTT message published successfully')
+                        domain_logger.info('MQTT message published successfully')
+                        return JsonResponse({'success': 1, 'message': 'Data Found'})
                     except Exception as mqtt_publish_error:
-                        payment_logger.error(f'Error publishing to MQTT: {mqtt_publish_error}', exc_info=True)
+                        domain_logger.error(f'Error publishing to MQTT: {mqtt_publish_error}', exc_info=True)
                         return JsonResponse({'success': 0, 'message': 'Error publishing to MQTT', 'result': str(mqtt_publish_error)})
                 else:
-                    payment_logger.warning(f'Store ID {json_data["data"]["storeId"]} not found in the database')
+                    domain_logger.warning(f'Store ID {json_data["data"]["storeId"]} not found in the database')
                     return JsonResponse({'success': 0, 'message': 'Store ID not found', 'result': 'Store ID not found in the database'})
+            elif json_data['code'] == 'PAYMENT_ERROR':
+                domain_logger.warning(f'Payment failed with code: {json_data["code"]}')
+                return JsonResponse({'success': 0, 'message': 'PAYMENT_ERROR', 'result': json_data})
             else:
-                payment_logger.warning(f'Payment failed with code: {json_data["code"]}')
-                return JsonResponse({'success': 0, 'message': 'Payment failed', 'result': json_data})
+                domain_logger.warning(f'Payment failed with unknown code: {json_data["code"]}')
+                return JsonResponse({'success': 0, 'message': 'Unknown payment code', 'result': json_data})
+
+        except Exception as e:
+            domain_logger.error(f'Error processing payment: {str(e)}', exc_info=True)
+            return JsonResponse({'success': 0, 'message': 'An error occurred', 'result': str(e)})
+
+    return JsonResponse({'success': 0, 'message': 'Invalid request method'})
+
+@api_view(['GET'])
+@csrf_exempt
+def paymentsuccess(request):
+    if request.method == 'GET':
+        domain = get_domain(request)
+        domain_logger = get_domain_logger(domain)
+        try:
+            json_data = {
+                "success": True,
+                "code": "PAYMENT_SUCCESS",
+                "message": "Your payment is successful.",
+                "data": {
+                    "merchantId": "INDEFTSTATICQRUAT",
+                    "transactionId": "TXSCAN2403011707204009674431",
+                    "providerReferenceId": "T2403011707226646428279",
+                    "amount": 500,
+                    "updateTimestamp": 1709293045000,
+                    "status": "SUCCESS",
+                    "transactionContext": {
+                        "qrCodeId": "QR2402191241504532352779",
+                        "storeId": "EMBI_DEMO_CQR_0001",
+                        "terminalId": "testterminal1"
+                    },
+                    "storeId": "EMBI_DEMO_CQR_0001",
+                    "terminalId": "testterminal1",
+                }
+            }
+
+            domain_logger.info(f"Payment success data: {json_data['data']}")
+            required_fields = ['storeId', 'merchantId', 'transactionId', 'terminalId']
+            if not all(field in json_data['data'] for field in required_fields):
+                domain_logger.error(f'Missing required data fields in JSON data: {json_data["data"]}')
+                return JsonResponse({'success': 0, 'message': 'Missing required data fields in JSON data'})
+
+            store_name_record = QrCode.objects.filter(qr_store_name=json_data['data'].get('storeId'))
+            domain_logger.info('Store record query executed')
+            if store_name_record.exists():
+                store_name = store_name_record.first().qr_store_name
+                domain_logger.info(f'Store Name: {store_name}')
+
+                # Check machine status directly from payload data
+                machine_id = json_data['data'].get('storeId')
+                print(machine_id,'tesing')
+                machine_status_record = MStatus.objects.filter(m_id=machine_id).first()
+                
+                if not machine_status_record:
+                    domain_logger.warning(f'Machine status record for {machine_id} not found')
+                    return JsonResponse({'success': 0, 'message': 'Machine status not found', 'result': 'Machine status record not found in the database'})
+
+                if machine_status_record.stock <= 0:
+                    domain_logger.warning(f'Stock unavailable for Machine ID: {machine_id}')
+                    return JsonResponse({'success': 0, 'message': 'Stock unavailable', 'result': 'Stock unavailable for the given machine'})
+
+                payload = json.dumps({
+                    "MACHINE_ID": store_name,
+                    "AID": json_data['data']['merchantId'],
+                    "TID": json_data['data']['transactionId'],
+                    "RID": json_data['data']['terminalId'],
+                    "QTY": 1
+                })
+                domain_logger.info(f'MQTT Payload: {payload}')
+
+                # Retry logic
+                max_retries = 1
+                for attempt in range(max_retries + 1):
+                    try:
+                        paho.mqtt.publish.single(TOPIC_M_ORDER, payload, hostname=BROKER, port=PORT, auth={'username': MQTT_USERNAME, 'password': MQTT_PASSWORD})
+                        domain_logger.info('MQTT message published successfully')
+                        break
+                    except Exception as mqtt_publish_error:
+                        domain_logger.error(f'Error publishing to MQTT (attempt {attempt + 1}): {mqtt_publish_error}', exc_info=True)
+                        if attempt < max_retries:
+                            time.sleep(10)  # Wait for 10 seconds before retrying
+                        else:
+                            domain_logger.error(f'Final attempt failed. Payment response: {json_data}')
+                            return JsonResponse({'success': 0, 'message': 'Error publishing to MQTT', 'result': str(mqtt_publish_error)})
+            else:
+                domain_logger.warning(f'Store ID {json_data["data"]["storeId"]} not found in the database')
+                return JsonResponse({'success': 0, 'message': 'Store ID not found', 'result': 'Store ID not found in the database'})
 
             return JsonResponse({'success': 1, 'message': 'Data Found'})
-        
         except Exception as e:
-            payment_logger.error(f'Error processing payment: {str(e)}', exc_info=True)
+            domain_logger.error(f'Error processing payment: {str(e)}', exc_info=True)
             return JsonResponse({'success': 0, 'message': 'An error occurred', 'result': str(e)})
+
 
 from django.db.models import Count
 from django.db import connection
@@ -4875,3 +5281,26 @@ class EmptyRootView(APIView):
 
     def get(self, request, *args, **kwargs):
         return Response({"Go Back Don't Be Too Smart."})
+
+# # views.py
+# from .sitemaps import  MQTTDataSitemap, MStatusSitemap, RefillStockHistorySitemap, MOrderSitemap, PaymentHistorySitemap, PaymentConfigurationSitemap, CustomEmailSitemap, ProductSitemap, ModelCapacitySitemap, QrCodeSitemap, SimDetailSitemap, MachineMasterSitemap, MachineUserMappingSitemap, SiteSettingsSitemap, ColorStoreSitemap, TicketSitemap
+
+# sitemaps = {
+#     # 'users': UserSitemap,
+#     'mqtt_data': MQTTDataSitemap,
+#     'm_status': MStatusSitemap,
+#     'refill_stock_history': RefillStockHistorySitemap,
+#     'm_orders': MOrderSitemap,
+#     'payment_history': PaymentHistorySitemap,
+#     'payment_configuration': PaymentConfigurationSitemap,
+#     'custom_email': CustomEmailSitemap,
+#     'products': ProductSitemap,
+#     'model_capacity': ModelCapacitySitemap,
+#     'qr_codes': QrCodeSitemap,
+#     'sim_details': SimDetailSitemap,
+#     'machine_master': MachineMasterSitemap,
+#     'machine_user_mapping': MachineUserMappingSitemap,
+#     'site_settings': SiteSettingsSitemap,
+#     'color_store': ColorStoreSitemap,
+#     'tickets': TicketSitemap,
+# }

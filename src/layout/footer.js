@@ -22,8 +22,38 @@ import 'src/views/pages/landingpage/landing.css'
 
 
 const Footer = () => {
+    var urlurl=window.location.origin
+    let urlArry=urlurl.split('.');
+
   // let year = new Date().getFullYear()
-  
+  const [checktenant, setChecktenant] = useState(false);
+  useEffect(() => {
+    checkdomain();
+}, []);
+
+function checkdomain(){
+if(urlurl.includes("localhost"))
+{
+    if(urlArry.length>=2)
+    {
+        setChecktenant(true);
+    }
+    else{
+        setChecktenant(false);
+    }
+}
+else 
+{
+    if(urlArry.length>=3)
+    {
+        setChecktenant(true);
+    }
+    else{
+        setChecktenant(false);
+    }
+}
+
+}
 
   return (
     <>
@@ -34,7 +64,17 @@ const Footer = () => {
                         <CCol className='mt-3 mb-3' style={{ color: 'white', fontSize: '20px' }}>
 
                             <CRow className='mt-2'><h3>QUICK LINKS</h3></CRow>
-                            <CRow className='mt-2'> <Link to="/login" style={{ textDecoration: 'none', fontSize: '15px', color: 'white' }}>Login</Link></CRow>
+                            <CRow className='mt-2'>
+                             {/* //<Link to="/login" style={{ textDecoration: 'none', fontSize: '15px', color: 'white' }}>Login</Link> */}
+                             {checktenant?(<Link to="/login" className="px-2" style={{ textDecoration: 'none', fontSize: '15px', color: 'white' }}>
+                                    Login
+                                </Link>):(
+                                    <Link to="/logindomain" className="px-2" style={{ textDecoration: 'none', fontSize: '15px', color: 'white' }}>
+                                    Login
+                                </Link>
+                                )}
+
+                             </CRow>
                             <CRow className='mt-2'> <Link to="/contact" style={{ textDecoration: 'none', fontSize: '15px', color: 'white' }}>Contact Us</Link></CRow>
                             <CRow className='mt-2'> <Link to="/complaints" style={{ textDecoration: 'none', fontSize: '15px', color: 'white' }}>Complaints</Link></CRow>
                             {/* <CRow className='mt-2'><Link to="#" style={{ textDecoration: 'none', fontSize: '15px', color: 'white' }}>Feedback</Link></CRow> */}

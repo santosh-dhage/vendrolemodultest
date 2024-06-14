@@ -3,10 +3,12 @@ from django.urls import path,include
 from django.conf.urls.static import static
 from django.conf import settings
 from userapp import views
-
+from userapp.views import sitemaps
+from django.contrib.sitemaps.views import sitemap
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include('userapp.urls')),
+    path('sitemap.xml/', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
     path('machine/',include('machinedataapp.urls')),
     path('',views.index ,name='index'),
     # path('tenant/',include('tenant.urls')),

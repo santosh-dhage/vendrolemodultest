@@ -189,14 +189,12 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import baseurl from 'src/utils/baseurl';
 import AuthContext from 'src/context/AuthContext';
-import apiKey from 'src/utils/apikey'
+
 const ColorContext = createContext();
 const baseURL = baseurl();
 
 export const ColorProvider = ({ children }) => {
   const { authTokens } = useContext(AuthContext);
-  const apikey=apiKey()
-  // Retrieve selected color from local storage or use a default color
   const initialColor = localStorage.getItem('selectedColor') || '#2c8bde';
   const [selectedColor, setSelectedColor] = useState(initialColor);
   const [fontColor, setFontColor] = useState('white');
@@ -207,7 +205,6 @@ export const ColorProvider = ({ children }) => {
 
   useEffect(() => {
     setFontColor(calculateFontColor(selectedColor));
-    // Update local storage with the new selected color
     localStorage.setItem('selectedColor', selectedColor);
   }, [selectedColor]);
 
@@ -230,13 +227,16 @@ export const ColorProvider = ({ children }) => {
       if (!authTokens?.access) {
         throw new Error('No token found');
       }
-      // const apikey = 'f4fd127ec8f0406e';
-      await axios.post(`${baseURL}/machine/colorstore/`, { color_name: selectedColor }, {
-        headers: {
-          'Authorization': `Bearer ${authTokens.access}`,
-          'x-api-key': apikey
-        },
-      });
+      const response = await axios.post(
+        `${baseURL}/machine/colorstore/`,
+        { color_name: selectedColor },
+        {
+          headers: {
+            'Authorization': `Bearer ${authTokens.access}`,
+            'x-api-key': process.env.REACT_APP_API_KEY
+          }
+        }
+      );
       alert('Color added successfully!');
     } catch (error) {
       alert('Error adding color:', error);
